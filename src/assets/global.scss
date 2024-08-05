@@ -1,0 +1,236 @@
+:root {
+  --black-01: #0f0f0f;
+  --black-02: #202020;
+  --black-03: #2e2e2e;
+  --gray-01: #474747;
+  --gray-02: #808080;
+  --gray-03: #a8a8a8;
+  --white-01: #f5f5f5;
+  --white-02: #eeeeee;
+
+  /* Highlight colors: */
+  --red-primary: #ff6161;
+  --red-orange: #fa7046;
+  --orange-primary: #f57f2b;
+  --orange-yellow: #eca92d;
+  --yellow-primary: #edda31;
+  --green-primary: #44b731;
+  --green-blue: #4ba797;
+  --blue-primary: #5297fd;
+  --blue-purple: #7265f6;
+  --purple-primary: #9133f0;
+  --purple-pink: #c850f0;
+  --pink-primary: #ff6cf0;
+
+  /* dimmed colors */
+  --red-dimmed: #4c2626;
+  --red-orange-dimmed: #4b2a20;
+  --orange-dimmed: #4a2d19;
+  --orange-yellow-dimmed: #48431b;
+  --yellow-dimmed: #48431b;
+  --green-dimmed: #1f3b1b;
+  --green-blue-dimmed: #213733;
+  --blue-dimmed: #23334c;
+  --blue-purple-dimmed: #2a274a;
+  --purple-dimmed: #321b49;
+  --purple-pink-dimmed: #3f2249;
+  --pink-dimmed: #4c2949;
+
+  /* Highlight colors abstracted */
+  --color-0: var(--red-primary);
+  --color-1: var(--red-orange);
+  --color-2: var(--orange-primary);
+  --color-3: var(--orange-yellow);
+  --color-4: var(--yellow-primary);
+  --color-5: var(--green-primary);
+  --color-6: var(--green-blue);
+  --color-7: var(--blue-primary);
+  --color-8: var(--blue-purple);
+  --color-9: var(--purple-primary);
+  --color-10: var(--purple-pink);
+  --color-11: var(--pink-primary);
+
+  --color-0-dimmed: var(--red-dimmed);
+  --color-1-dimmed: var(--red-orange-dimmed);
+  --color-2-dimmed: var(--orange-dimmed);
+  --color-3-dimmed: var(--orange-yellow-dimmed);
+  --color-4-dimmed: var(--yellow-dimmed);
+  --color-5-dimmed: var(--green-dimmed);
+  --color-6-dimmed: var(--green-blue-dimmed);
+  --color-7-dimmed: var(--blue-dimmed);
+  --color-8-dimmed: var(--blue-purple-dimmed);
+  --color-9-dimmed: var(--purple-dimmed);
+  --color-10-dimmed: var(--purple-pink-dimmed);
+  --color-11-dimmed: var(--pink-dimmed);
+
+  /* transparent whites */
+  --light-48: rgba(255, 255, 255, 0.48);
+  --light-24: rgba(255, 255, 255, 0.24);
+  --light-12: rgba(255, 255, 255, 0.12);
+
+  /* Slider styles */
+  --slider-background-color: #474747;
+  --slider-checked-background-color: #474747;
+  --color-for-checked-left-label: #f5f5f5;
+  --color-for-checked-right-label: #f5f5f5;
+}
+
+html {
+  background: linear-gradient(135deg, #121212 0%, #161616 100%);
+}
+
+body {
+  margin: 0;
+  font-family: "Jost", Avenir Next, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.main-container {
+  max-width: 1556px;
+  margin: 0 auto;
+}
+
+
+
+h3,
+label {
+  color: var(--white-01);
+}
+
+h1.main-title {
+  color: var(--white-02);
+  font-size: 18px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+span.version {
+  font-weight: normal;
+  color: var(--gray-02);
+  margin-left: 4px;
+}
+
+
+/* Add any other global styles here */
+
+/* from other file */
+
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: calc(100% - 160px);
+  margin: 0 auto;
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.fb-scroll-container {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+
+.fb-scroll-container::-webkit-scrollbar {
+  display: none;  /* WebKit */
+}
+
+
+.fretboard-container {
+  position: relative;
+  width: 100%;
+  max-width: calc(100% - 160px);
+  margin: 48px auto 0;
+  padding-bottom: 16px;
+}
+
+.fretboard-svg {
+  background: var(--black-02);
+  border-radius: 8px;
+  min-width: 900px;
+  width: 100%;
+}
+
+.bottom-settings {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-start;
+  gap: 24px;
+  max-width: calc(100% - 160px);
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.settings-container {
+  padding: 24px;
+  background: #212121;
+  box-shadow: 0px 4px 60px rgba(0, 0, 0, 0.24);
+  border-radius: 12px;
+}
+
+.key-button {
+  border: none;
+  background-color: var(--black-01);
+  color: var(--gray-02);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  line-height: 34px;
+  font-weight: 600;
+  font-size: 18px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+/* -- Form elements -- */
+.custom-select {
+  appearance: none;
+  /* Remove default styling */
+  -webkit-appearance: none;
+  /* Remove default styling for WebKit browsers */
+  -moz-appearance: none;
+  /* Remove default styling for Mozilla browsers */
+  font-family: "Jost", Avenir Next, Helvetica, Arial, sans-serif;
+  user-select: none;
+  height: 40px;
+
+  border-radius: 20px;
+  background-color: var(--black-03);
+  border: 2px solid var(--black-03);
+  font-size: 18px;
+  color: var(--white-01);
+  padding: 0 32px 0 12px;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTYgOUwxMiAxNUwxOCA5IiBzdHJva2U9IiNGNUY1RjUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=");
+  background-position: right 10px center;
+  /* Position the custom arrow */
+  background-repeat: no-repeat;
+  transition: all 0.12s ease-out;
+}
+
+.custom-select option {
+  background-color: var(--black-02);
+  color: var(--white-01);
+}
+
+
+select.custom-select:focus-visible, .custom-select:hover {
+  cursor: pointer;
+  border: 2px solid var(--light-24);
+  outline: none;
+}
+
+
+
+
