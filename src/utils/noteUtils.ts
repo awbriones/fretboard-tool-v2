@@ -1,5 +1,7 @@
-import { Scale, FretboardNote, ScaleDegree } from "@/types";
+import { Scale, FretboardNote } from "@/types";
+import { Note, Interval, distance } from "@tonaljs/tonal";
 
+// Keep legacy arrays for backward compatibility if needed
 export const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
 export const fullNoteNames = [
@@ -18,8 +20,7 @@ export const fullNoteNames = [
 ];
 
 export function getNoteFromInterval(startNote: string, interval: number): string {
-  const startIndex = noteNames.indexOf(startNote);
-  return noteNames[(startIndex + interval) % 12];
+  return Note.transpose(startNote, Interval.fromSemitones(interval));
 }
 
 export function getSimpleNoteName(fullNoteName: string): string {
@@ -32,6 +33,11 @@ export function getFullNoteName(simpleNoteName: string): string {
   return index !== -1 ? fullNoteNames[index] : simpleNoteName;
 }
 
+export function getNoteInterval(fromNote: string, toNote: string): number {
+  const semitones = distance(fromNote, toNote);
+  return typeof semitones === "number" ? semitones : 0;
+}
+
 export function createFretboardNote(
   noteName: string,
   stringIndex: number,
@@ -39,21 +45,21 @@ export function createFretboardNote(
   rootNote: string,
   scale: Scale
 ): FretboardNote {
-  const noteIndex = noteNames.indexOf(noteName);
-  const rootIndex = noteNames.indexOf(rootNote);
-  const interval = (noteIndex - rootIndex + 12) % 12;
+  const interval = getNoteInterval(rootNote, noteName);
   const scaleDegreeIndex = scale.intervals.indexOf(interval);
+  const noteInfo = Note.get(noteName);
+  const simplifiedName = noteInfo.pc || noteName;
 
   return {
-    name: noteName,
-    value: noteIndex,
+    name: simplifiedName,
+    value: noteInfo.chroma || 0,
     interval,
     scaleDegree: scaleDegreeIndex > -1 ? scaleDegreeIndex + 1 : null,
     isColored: scaleDegreeIndex > -1,
-    isDimmed: false, // You might want to determine this based on some logic
-    isDisplayed: scaleDegreeIndex > -1, // Or based on your display logic
+    isDimmed: false,
+    isDisplayed: scaleDegreeIndex > -1,
     string: stringIndex,
     fret,
-    id: `${stringIndex}-${fret}-${noteName}`,
+    id: `${stringIndex}-${fret}-${simplifiedName}`,
   };
 }
