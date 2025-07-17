@@ -2,7 +2,8 @@
   <div class="scale-selector">
     <select v-model="localSelectedScale" @change="updateScale" class="custom-select">
       <option v-for="(scale, name) in scales" :key="name" :value="name">
-        {{ rootNote }} {{ scale.name }}
+        <!-- {{ rootNote }} {{ scale.name }} -->
+        {{ scale.name }}
       </option>
     </select>
   </div>

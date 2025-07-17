@@ -22,4 +22,5 @@ export interface Note {
 export interface FretboardNote extends Note {
   string: number;
   fret: number;
+  id: string;
 }

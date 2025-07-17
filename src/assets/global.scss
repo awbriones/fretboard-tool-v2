@@ -148,14 +148,19 @@ span.version {
   position: relative;
   width: 100%;
   max-width: calc(100% - 160px);
-  margin: 48px auto 0;
+  margin: 48px auto 24px;
   padding-bottom: 16px;
 }
 
+.fretboard{
+  border-radius: 24px;
+  background-color: var(--black-02);
+}
+
 .fretboard-svg {
-  background: var(--black-02);
-  border-radius: 8px;
-  min-width: 900px;
+  // background: var(--black-02);
+  border-radius: 24px;
+  min-width: 1000px;
   width: 100%;
 }
 
@@ -171,9 +176,9 @@ span.version {
 
 .settings-container {
   padding: 24px;
-  background: #212121;
+  background: var(--black-02);
   box-shadow: 0px 4px 60px rgba(0, 0, 0, 0.24);
-  border-radius: 12px;
+  border-radius: 24px;
 }
 
 .key-button {

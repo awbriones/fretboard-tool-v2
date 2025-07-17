@@ -53,14 +53,14 @@ function changeTuning(index: number, newValue: string) {
   display: flex;
   flex-direction: column;
   position: absolute;
-  top: 56px;
-  left: 8px;
-  gap: 12px;
+  top: 70px;
+  left: 10px;
+  gap: 15px;
 }
 
 .tuning-controls.bass {
-  top: 69px;
-  gap: 34px;
+  top: 85px;
+  gap: 37px;
 }
 
 .tuning-select {

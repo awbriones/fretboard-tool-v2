@@ -54,5 +54,6 @@ export function createFretboardNote(
     isDisplayed: scaleDegreeIndex > -1, // Or based on your display logic
     string: stringIndex,
     fret,
+    id: `${stringIndex}-${fret}-${noteName}`,
   };
 }

@@ -68,38 +68,33 @@
       </g>
 
       <!-- Notes -->
-      <g v-for="note in fretboardNotes" :key="`${note.string}-${note.fret}`">
-        <circle
-          :cx="getX(note.fret)"
-          :cy="getY(note.string)"
-          r="20"
-          :fill="getNoteColor(note)"
-          v-if="note.isDisplayed"
-        />
-        <svg
-          v-if="note.isDisplayed"
-          :x="getX(note.fret) - 20"
-          :y="getY(note.string) - 20"
-          width="40"
-          height="40"
-          :viewBox="getNoteSvg(note).viewBox"
-        >
-          <path
-            v-for="(path, index) in getNoteSvg(note).paths"
-            :key="index"
-            :d="path.d"
-            :fill="getTextColor(note)"
-            :fill-rule="path.fillRule"
-            :clip-rule="path.clipRule"
-          />
-        </svg>
-      </g>
+      <transition-group name="note-marker">
+        <g v-for="note in visibleNotes" :key="note.id" class="note-marker">
+          <circle :cx="getX(note.fret)" :cy="getY(note.string)" r="20" :fill="getNoteColor(note)" />
+          <svg
+            :x="getX(note.fret) - 20"
+            :y="getY(note.string) - 20"
+            width="40"
+            height="40"
+            :viewBox="getNoteSvg(note).viewBox"
+          >
+            <path
+              v-for="(path, index) in getNoteSvg(note).paths"
+              :key="index"
+              :d="path.d"
+              :fill="getTextColor(note)"
+              :fill-rule="path.fillRule"
+              :clip-rule="path.clipRule"
+            />
+          </svg>
+        </g>
+      </transition-group>
     </svg>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, defineProps } from "vue";
+import { ref, computed, onMounted, onUnmounted, defineProps, nextTick } from "vue";
 import { useFretboardStore } from "@/stores/fretboard";
 import { storeToRefs } from "pinia";
 import type { FretboardNote } from "@/types";
@@ -111,17 +106,29 @@ const props = defineProps<{
   isScaleDegree: boolean;
 }>();
 
+const visibleNotes = computed(() =>
+  fretboardNotes.value.filter(
+    (note) => note.scaleDegree !== null && scaleDegreeSettings.value[note.scaleDegree - 1].show
+  )
+);
+
 const store = useFretboardStore();
-const { scaleDegreeSettings } = storeToRefs(store);
-const { isScaleDegree } = storeToRefs(store);
-const { numFrets, fretboardNotes, tuning, numStrings } = storeToRefs(store);
+const {
+  scaleDegreeSettings,
+  isScaleDegree,
+  numFrets,
+  fretboardNotes,
+  tuning,
+  numStrings,
+  isGuitar,
+} = storeToRefs(store);
 
 const fretboardContainer = ref<HTMLDivElement | null>(null);
 const fretboardSvg = ref<SVGSVGElement | null>(null);
 
 const margin = { top: 64, right: 20, bottom: 30, left: 56 };
 const width = ref(1000);
-const height = ref(350);
+const height = ref(375);
 
 const updateDimensions = () => {
   if (fretboardContainer.value) {
@@ -144,7 +151,8 @@ const cellHeight = computed(
 );
 
 const fretPositions = computed(() => {
-  const scaleLength = width.value - margin.left - margin.right - 32; // Subtracting 32 as in the original
+  const scaleLength = width.value - margin.left - margin.right - 8; // Subtracting 32 as in the original
+  //const rule = 17.817; // This is closer to the standard rule for fret positioning
   const rule = 17.817; // This is closer to the standard rule for fret positioning
 
   let totalLength = 0;
@@ -176,7 +184,7 @@ const fretPositions = computed(() => {
 function getX(fret: number) {
   if (fret === 0) {
     // For open strings, position to the left of the nut
-    return fretPositions.value[0] - cellHeight.value / 2;
+    return fretPositions.value[0] - 28; // was originally - cellHeight.value / 2
   } else {
     // For fretted notes, position in the center of the fret
     return (fretPositions.value[fret - 1] + fretPositions.value[fret]) / 2;
@@ -228,7 +236,7 @@ const getNoteSvg = computed(() => (note: FretboardNote) => {
 });
 
 //not 100 sure about this
-const isGuitar = computed(() => store.numStrings === 6);
+// const isGuitar = computed(() => store.numStrings === 6);
 
 function handleTuningChanged(newTuning: string[]) {
   store.setTuning(newTuning);
@@ -241,7 +249,7 @@ function handleTuningChanged(newTuning: string[]) {
   border-radius: 8px;
   min-width: 900px;
   width: 100%;
-  height: 350px;
+  height: 375px;
 }
 
 .nut {
@@ -303,5 +311,44 @@ g.note-circle:hover {
 
 g.note-circle:active {
   transform: scale(1);
+}
+
+/* animation stuff */
+
+.note-marker {
+  transform-box: border-box;
+  transform-origin: center;
+  /* transition: transform 2.2s ease-out, opacity 2.2s ease-out; */
+}
+
+.note-marker-enter-active,
+.note-marker-leave-active {
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.note-marker-enter-from,
+.note-marker-leave-to {
+  transform: scale(0.1);
+  opacity: 0;
+}
+
+.note-marker-enter-to,
+.note-marker-leave-from {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.note-marker circle {
+  transform-box: border-box;
+  transform-origin: center;
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out, fill 0.3s ease-out;
+}
+
+.note-marker svg {
+  transition: opacity 0.3s ease-out;
+}
+
+.note-marker path {
+  transition: fill 0.3s ease-out;
 }
 </style>

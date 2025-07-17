@@ -155,7 +155,9 @@ function getDimColor(index: number) {
 }
 
 function toggleShow(index: number) {
-  scaleDegreeSettings.value[index].show = !scaleDegreeSettings.value[index].show;
+  scaleDegreeSettings.value = scaleDegreeSettings.value.map((setting, i) =>
+    i === index ? { ...setting, show: !setting.show } : setting
+  );
   updateStore();
   updateKey.value++; // Force a re-render of the entire component
 }

@@ -22,6 +22,8 @@ interface FretboardState {
   setIsScaleDegree: (value: boolean) => void;
   scaleDegreeSettings: Ref<ScaleDegreeSetting[]>;
   setScaleDegreeSettings: (settings: ScaleDegreeSetting[]) => void;
+  isGuitar: Ref<boolean>; // Add the 'isGuitar' property
+  setInstrument: (guitar: boolean) => void; // Add the 'setInstrument' property
 }
 
 interface ScaleDegreeSetting {
@@ -52,17 +54,19 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
   ]);
 
   const fretboardNotes = computed(() => {
-    const notes: FretboardNote[] = [];
-    tuning.value.forEach((stringNote, stringIndex) => {
-      for (let fret = 0; fret <= numFrets.value; fret++) {
+    return tuning.value.flatMap((stringNote, stringIndex) =>
+      Array.from({ length: numFrets.value + 1 }, (_, fret) => {
         const noteIndex = (noteNames.indexOf(stringNote) + fret) % 12;
         const noteName = noteNames[noteIndex];
-        notes.push(
-          createFretboardNote(noteName, stringIndex, fret, rootNote.value, selectedScale.value)
+        return createFretboardNote(
+          noteName,
+          stringIndex,
+          fret,
+          rootNote.value,
+          selectedScale.value
         );
-      }
-    });
-    return notes;
+      })
+    );
   });
 
   function setNumFrets(num: number) {
@@ -84,6 +88,14 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
   function setNumStrings(num: number) {
     numStrings.value = num;
     // Optionally adjust tuning here based on number of strings
+  }
+
+  const isGuitar = ref(true);
+
+  function setInstrument(guitar: boolean) {
+    isGuitar.value = guitar;
+    numStrings.value = guitar ? 6 : 4;
+    tuning.value = guitar ? ["E", "A", "D", "G", "B", "E"] : ["E", "A", "D", "G"];
   }
 
   function setTuning(newTuning: string[]) {
@@ -115,6 +127,8 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
     setIsScaleDegree,
     scaleDegreeSettings,
     setScaleDegreeSettings,
+    isGuitar,
+    setInstrument,
   };
 });
 

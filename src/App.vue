@@ -6,6 +6,7 @@
         <div class="rightside-content">
           <KeySelector />
           <ScaleSelector />
+          <InstrumentSelector />
         </div>
       </div>
     </header>
@@ -35,6 +36,7 @@ import ScaleSelector from "@/components/ScaleSelector.vue";
 import FretboardDisplay from "@/components/FretboardDisplay.vue";
 import ToggleSwitch from "@/components/ToggleSwitch.vue";
 import HighlightSettings from "@/components/HighlightSettings.vue";
+import InstrumentSelector from "@/components/InstrumentSelector.vue";
 import { ref, onMounted } from "vue";
 import { useFretboardStore } from "@/stores/fretboard";
 import { useScales } from "@/composables/useScales";
