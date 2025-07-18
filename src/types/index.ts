@@ -7,6 +7,7 @@ export interface ScaleDegree {
 export interface Scale {
   name: string;
   intervals: number[];
+  intervalNames: string[];
 }
 
 export interface Note {

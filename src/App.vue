@@ -34,16 +34,14 @@
 import KeySelector from "@/components/KeySelector.vue";
 import ScaleSelector from "@/components/ScaleSelector.vue";
 import FretboardDisplay from "@/components/FretboardDisplay.vue";
-import ToggleSwitch from "@/components/ToggleSwitch.vue";
 import HighlightSettings from "@/components/HighlightSettings.vue";
 import InstrumentSelector from "@/components/InstrumentSelector.vue";
-import { ref, onMounted } from "vue";
+import { onMounted } from "vue";
 import { useFretboardStore } from "@/stores/fretboard";
-import { useScales } from "@/composables/useScales";
+import { storeToRefs } from "pinia";
 
-const isScaleDegree = ref(true);
 const store = useFretboardStore();
-const { scales } = useScales();
+const { isScaleDegree } = storeToRefs(store);
 
 onMounted(() => {
   // Ensure the store has an initial scale set
@@ -52,9 +50,6 @@ onMounted(() => {
   }
 });
 
-function toggleNoteDisplay(value: boolean) {
-  isScaleDegree.value = value;
-}
 </script>
 
 <style lang="scss">

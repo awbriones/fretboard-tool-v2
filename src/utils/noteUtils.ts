@@ -34,8 +34,31 @@ export function getFullNoteName(simpleNoteName: string): string {
 }
 
 export function getNoteInterval(fromNote: string, toNote: string): number {
-  const semitones = distance(fromNote, toNote);
-  return typeof semitones === "number" ? semitones : 0;
+  const intervalStr = distance(fromNote, toNote);
+  if (typeof intervalStr === "string") {
+    return Interval.semitones(intervalStr) || 0;
+  }
+  return 0;
+}
+
+export function formatIntervalName(intervalName: string): string {
+  // Convert Tonal.js interval names to more user-friendly notation
+  const conversions: Record<string, string> = {
+    "1P": "1",
+    "2m": "b2",
+    "2M": "2",
+    "3m": "b3",
+    "3M": "3",
+    "4P": "4",
+    "4A": "#4",
+    "5d": "b5",
+    "5P": "5",
+    "6m": "b6",
+    "6M": "6",
+    "7m": "b7",
+    "7M": "7",
+  };
+  return conversions[intervalName] || intervalName;
 }
 
 export function createFretboardNote(

@@ -89,20 +89,11 @@ import { computed, ref, watch, onMounted } from "vue";
 import { useFretboardStore } from "@/stores/fretboard";
 import { storeToRefs } from "pinia";
 import { getSvgPath } from "@/utils/svgPaths";
-import { useScales } from "@/composables/useScales";
 import { noteNames } from "@/utils/noteUtils";
 
 const store = useFretboardStore();
 const { scaleDegreeSettings, selectedScale, rootNote, isScaleDegree } = storeToRefs(store);
-const { scales } = useScales();
 const updateKey = ref(0);
-
-const selectedLabel = ref("Scale Degrees");
-
-const getScaleDegreeIndex = (index: number) => {
-  const scaleIntervals = selectedScale.value.intervals;
-  return scaleIntervals.indexOf(index);
-};
 
 function getButtonSvg(index: number) {
   const setting = scaleDegreeSettings.value[index];
@@ -155,26 +146,24 @@ function getDimColor(index: number) {
 }
 
 function toggleShow(index: number) {
-  scaleDegreeSettings.value = scaleDegreeSettings.value.map((setting, i) =>
-    i === index ? { ...setting, show: !setting.show } : setting
-  );
-  updateStore();
+  const currentSettings = [...scaleDegreeSettings.value];
+  currentSettings[index] = { ...currentSettings[index], show: !currentSettings[index].show };
+  store.setScaleDegreeSettings(currentSettings);
   updateKey.value++; // Force a re-render of the entire component
 }
 
 function toggleColor(index: number) {
-  scaleDegreeSettings.value[index].color = !scaleDegreeSettings.value[index].color;
-  updateStore();
+  const currentSettings = [...scaleDegreeSettings.value];
+  currentSettings[index] = { ...currentSettings[index], color: !currentSettings[index].color };
+  store.setScaleDegreeSettings(currentSettings);
 }
 
 function toggleBright(index: number) {
-  scaleDegreeSettings.value[index].bright = !scaleDegreeSettings.value[index].bright;
-  updateStore();
+  const currentSettings = [...scaleDegreeSettings.value];
+  currentSettings[index] = { ...currentSettings[index], bright: !currentSettings[index].bright };
+  store.setScaleDegreeSettings(currentSettings);
 }
 
-function updateStore() {
-  store.setScaleDegreeSettings(scaleDegreeSettings.value);
-}
 function setLabel(option: string) {
   store.setIsScaleDegree(option === "Scale Degrees");
 }
@@ -187,8 +176,7 @@ watch(
 );
 
 watch(selectedScale, () => {
-  // Update the store when the scale changes
-  updateStore();
+  // Scale change is handled by the store watcher that clears manual settings
 });
 
 // Force a re-render when isScaleDegree changes

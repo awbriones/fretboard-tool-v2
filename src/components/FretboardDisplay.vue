@@ -94,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, defineProps, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, defineProps } from "vue";
 import { useFretboardStore } from "@/stores/fretboard";
 import { storeToRefs } from "pinia";
 import type { FretboardNote } from "@/types";
@@ -102,7 +102,7 @@ import TuningControls from "./TuningControls.vue";
 import { noteNames } from "@/utils/noteUtils";
 import { svgPaths } from "@/utils/svgPaths";
 
-const props = defineProps<{
+defineProps<{
   isScaleDegree: boolean;
 }>();
 
@@ -111,6 +111,7 @@ const visibleNotes = computed(() =>
     (note) => note.scaleDegree !== null && scaleDegreeSettings.value[note.scaleDegree - 1].show
   )
 );
+1;
 
 const store = useFretboardStore();
 const {
@@ -118,8 +119,6 @@ const {
   isScaleDegree,
   numFrets,
   fretboardNotes,
-  tuning,
-  numStrings,
   isGuitar,
 } = storeToRefs(store);
 
@@ -246,10 +245,11 @@ function handleTuningChanged(newTuning: string[]) {
 <style scoped>
 .fretboard {
   background: var(--black-02);
-  border-radius: 8px;
+  border-radius: 24px;
   min-width: 900px;
   width: 100%;
   height: 375px;
+  padding-bottom: 12px;
 }
 
 .nut {

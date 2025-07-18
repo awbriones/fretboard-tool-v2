@@ -1,22 +1,35 @@
 import { ref } from "vue";
 import type { Scale } from "@/types";
-import { Scale as TonalScale, distance } from "@tonaljs/tonal";
+import { Scale as TonalScale, Interval } from "@tonaljs/tonal";
 
 export function useScales() {
   // Generate scales using Tonal.js
   const generateScaleFromTonal = (scaleName: string): Scale => {
     const tonalScale = TonalScale.get(`C ${scaleName}`);
-    const intervals = tonalScale.notes.map((note) => {
-      const semitones = distance("C", note);
-      return typeof semitones === "number" ? semitones : 0;
+    if (tonalScale.empty) {
+      // eslint-disable-next-line no-console
+      console.error(`Failed to generate scale: "${scaleName}" - Tonal.js returned empty result`);
+      return { name: scaleName, intervals: [], intervalNames: [] };
+    }
+    const intervals = tonalScale.intervals.map((interval) => {
+      return Interval.semitones(interval) || 0;
     });
+    // Remove "C " from the name and capitalize first letter
+    const cleanName = tonalScale.name ? tonalScale.name.replace(/^C\s+/, "") : scaleName;
+    const capitalizedName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
     return {
-      name: tonalScale.name || scaleName,
+      name: capitalizedName,
       intervals,
+      intervalNames: tonalScale.intervals,
     };
   };
 
+  // To add new scales:
+  // 1. Check if the scale exists in Tonal.js by testing: Scale.get("C <scale_name>")
+  // 2. Add it here using generateScaleFromTonal("<scale_name>")
+  // 3. The key you use here will appear in the scale selector dropdown
   const scales = ref<Record<string, Scale>>({
+    // Modal scales
     major: generateScaleFromTonal("major"),
     minor: generateScaleFromTonal("minor"),
     dorian: generateScaleFromTonal("dorian"),
@@ -24,9 +37,18 @@ export function useScales() {
     lydian: generateScaleFromTonal("lydian"),
     mixolydian: generateScaleFromTonal("mixolydian"),
     locrian: generateScaleFromTonal("locrian"),
-    // Custom scales that might not be in Tonal.js
-    pentatonic: { name: "Pentatonic", intervals: [0, 2, 4, 7, 9] },
-    blues: { name: "Blues", intervals: [0, 3, 5, 6, 7, 10] },
+
+    // Pentatonic scales
+    "major pentatonic": generateScaleFromTonal("major pentatonic"),
+    "minor pentatonic": generateScaleFromTonal("minor pentatonic"),
+
+    // Blues scales
+    "minor blues": generateScaleFromTonal("minor blues"),
+
+    // Add more scales here as needed:
+    // "harmonic minor": generateScaleFromTonal("harmonic minor"),
+    // "melodic minor": generateScaleFromTonal("melodic minor"),
+    // "whole tone": generateScaleFromTonal("whole tone"),
   });
 
   // const selectedScale = ref("major");

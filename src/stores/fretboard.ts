@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import type { Ref, ComputedRef } from "vue";
 import { Scale, FretboardNote } from "@/types";
 import { createFretboardNote, noteNames } from "@/utils/noteUtils";
@@ -20,7 +20,7 @@ interface FretboardState {
   setTuning: (newTuning: string[]) => void;
   isScaleDegree: Ref<boolean>;
   setIsScaleDegree: (value: boolean) => void;
-  scaleDegreeSettings: Ref<ScaleDegreeSetting[]>;
+  scaleDegreeSettings: ComputedRef<ScaleDegreeSetting[]>;
   setScaleDegreeSettings: (settings: ScaleDegreeSetting[]) => void;
   isGuitar: Ref<boolean>; // Add the 'isGuitar' property
   setInstrument: (guitar: boolean) => void; // Add the 'setInstrument' property
@@ -41,17 +41,48 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
   const numStrings = ref(6);
   const isScaleDegree = ref(true);
 
-  const selectedScale = computed(() => scales.value[selectedScaleName.value]);
+  const selectedScale = computed(() => {
+    const scale = scales.value[selectedScaleName.value];
+    if (!scale) {
+      // Fallback to major scale if the selected scale doesn't exist
+      return (
+        scales.value.major || {
+          name: "Major",
+          intervals: [0, 2, 4, 5, 7, 9, 11],
+          intervalNames: ["1P", "2M", "3M", "4P", "5P", "6M", "7M"],
+        }
+      );
+    }
+    return scale;
+  });
 
-  const scaleDegreeSettings = ref<ScaleDegreeSetting[]>([
-    { show: true, color: true, bright: true },
-    { show: true, color: false, bright: false },
-    { show: true, color: true, bright: true },
-    { show: true, color: false, bright: false },
-    { show: true, color: true, bright: true },
-    { show: true, color: false, bright: false },
-    { show: true, color: false, bright: false },
-  ]);
+  const scaleDegreeSettings = computed(() => {
+    const scaleLength = selectedScale.value?.intervals?.length || 7;
+    
+    return Array.from({ length: scaleLength }, (_, index) => {
+      const intervalSemitones = selectedScale.value?.intervals?.[index] || 0;
+      
+      // Map semitones to traditional music theory degrees
+      // 1 (root): 0 semitones -> bright + colored
+      if (intervalSemitones === 0) {
+        return { show: true, color: true, bright: true };
+      }
+      // 3 or b3 (third): 3 or 4 semitones -> bright + colored
+      if ([3, 4].includes(intervalSemitones)) {
+        return { show: true, color: true, bright: true };
+      }
+      // 5 (fifth): 7 semitones -> bright + colored
+      if (intervalSemitones === 7) {
+        return { show: true, color: true, bright: true };
+      }
+      // 7 or b7 (seventh): 10 or 11 semitones -> colored + dim
+      if ([10, 11].includes(intervalSemitones)) {
+        return { show: true, color: true, bright: false };
+      }
+      // Everything else (2, 4, 6, etc.): dim only
+      return { show: true, color: false, bright: false };
+    });
+  });
 
   const fretboardNotes = computed(() => {
     return tuning.value.flatMap((stringNote, stringIndex) =>
@@ -81,7 +112,8 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
     if (scales.value[scaleName]) {
       selectedScaleName.value = scaleName;
     } else {
-      console.error(`Scale "${scaleName}" not found`);
+      // eslint-disable-next-line no-console
+      console.error(`Scale "${scaleName}" not found. Available scales:`, Object.keys(scales.value));
     }
   }
 
@@ -106,9 +138,25 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
     isScaleDegree.value = value;
   }
 
+  const manualScaleDegreeSettings = ref<ScaleDegreeSetting[]>([]);
+
   function setScaleDegreeSettings(settings: ScaleDegreeSetting[]) {
-    scaleDegreeSettings.value = settings;
+    manualScaleDegreeSettings.value = settings;
   }
+
+  // Clear manual settings when scale changes
+  watch(selectedScaleName, () => {
+    manualScaleDegreeSettings.value = [];
+  });
+
+  // Use manual settings if they exist and match the scale length, otherwise use computed defaults
+  const finalScaleDegreeSettings = computed(() => {
+    const scaleLength = selectedScale.value?.intervals?.length || 7;
+    if (manualScaleDegreeSettings.value.length === scaleLength) {
+      return manualScaleDegreeSettings.value;
+    }
+    return scaleDegreeSettings.value;
+  });
 
   return {
     rootNote,
@@ -125,7 +173,7 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
     setTuning,
     isScaleDegree,
     setIsScaleDegree,
-    scaleDegreeSettings,
+    scaleDegreeSettings: finalScaleDegreeSettings,
     setScaleDegreeSettings,
     isGuitar,
     setInstrument,

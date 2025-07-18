@@ -10,13 +10,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useFretboardStore } from "@/stores/fretboard";
 import { useScales } from "@/composables/useScales";
 
 const store = useFretboardStore();
-const { rootNote, selectedScaleName } = storeToRefs(store);
+const { selectedScaleName } = storeToRefs(store);
 const { scales } = useScales();
 
 const localSelectedScale = ref(selectedScaleName.value);
