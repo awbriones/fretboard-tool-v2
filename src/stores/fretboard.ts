@@ -106,6 +106,7 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
 
   function setRootNote(note: string) {
     rootNote.value = note;
+    // Note: Debug logging will be triggered by the rootNote watcher
   }
 
   function setSelectedScale(scaleName: string) {
@@ -142,11 +143,13 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
 
   function setScaleDegreeSettings(settings: ScaleDegreeSetting[]) {
     manualScaleDegreeSettings.value = settings;
+    logDebugState(`Manual settings update via setScaleDegreeSettings`);
   }
 
   // Clear manual settings when scale changes
-  watch(selectedScaleName, () => {
+  watch(selectedScaleName, (newScale, oldScale) => {
     manualScaleDegreeSettings.value = [];
+    logDebugState(`Scale changed from ${oldScale} to ${newScale}`);
   });
 
   // Use manual settings if they exist and match the scale length, otherwise use computed defaults
@@ -157,6 +160,68 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
     }
     return scaleDegreeSettings.value;
   });
+
+  // Debug logging for all 12 chromatic notes
+  function logDebugState(trigger: string) {
+    const chromaticNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    const currentScale = selectedScale.value;
+    const currentSettings = finalScaleDegreeSettings.value;
+    
+    console.group(`🎵 Fretboard State Change: ${trigger}`);
+    console.log(`Root Note: ${rootNote.value}`);
+    console.log(`Scale: ${currentScale.name} (${currentScale.intervals.join(', ')})`);
+    console.log(`Settings Length: ${currentSettings.length}`);
+    
+    console.table(
+      Array.from({ length: 12 }, (_, chromaticIndex) => {
+        const noteName = chromaticNotes[(chromaticIndex + noteNames.indexOf(rootNote.value)) % 12];
+        const isInScale = currentScale.intervals.includes(chromaticIndex);
+        
+        let setting;
+        if (currentScale.name === "Chromatic") {
+          // For chromatic, use direct chromatic indexing
+          setting = currentSettings[chromaticIndex] || { show: false, bright: false, color: false };
+        } else {
+          // For other scales, check if this chromatic interval is in the scale
+          const scalePosition = currentScale.intervals.indexOf(chromaticIndex);
+          setting = scalePosition >= 0 
+            ? (currentSettings[scalePosition] || { show: false, bright: false, color: false })
+            : { show: false, bright: false, color: false };
+        }
+        
+        return {
+          chromatic: chromaticIndex,
+          note: noteName,
+          inScale: isInScale,
+          show: setting.show,
+          color: setting.color,
+          bright: setting.bright,
+          scalePos: currentScale.intervals.indexOf(chromaticIndex)
+        };
+      })
+    );
+    console.groupEnd();
+  }
+
+  // Watch for root note changes
+  watch(rootNote, (newRoot, oldRoot) => {
+    logDebugState(`Root note changed from ${oldRoot} to ${newRoot}`);
+  });
+
+  // Watch for settings changes
+  watch(finalScaleDegreeSettings, () => {
+    logDebugState(`Settings changed`);
+  }, { deep: true });
+
+  // Watch for manual settings changes
+  watch(manualScaleDegreeSettings, () => {
+    logDebugState(`Manual settings changed`);
+  }, { deep: true });
+
+  // Log initial state
+  setTimeout(() => {
+    logDebugState(`Initial store state`);
+  }, 100);
 
   return {
     rootNote,
