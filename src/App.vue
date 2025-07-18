@@ -14,7 +14,7 @@
     <div class="main-container">
       <div class="fb-scroll-container">
         <div class="fretboard-container">
-          <FretboardDisplay :is-scale-degree="isScaleDegree" />
+          <FretboardDisplay />
         </div>
       </div>
       <div class="bottom-settings">
@@ -38,10 +38,8 @@ import HighlightSettings from "@/components/HighlightSettings.vue";
 import InstrumentSelector from "@/components/InstrumentSelector.vue";
 import { onMounted } from "vue";
 import { useFretboardStore } from "@/stores/fretboard";
-import { storeToRefs } from "pinia";
 
 const store = useFretboardStore();
-const { isScaleDegree } = storeToRefs(store);
 
 onMounted(() => {
   // Ensure the store has an initial scale set

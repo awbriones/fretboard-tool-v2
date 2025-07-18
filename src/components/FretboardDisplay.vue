@@ -94,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, defineProps } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useFretboardStore } from "@/stores/fretboard";
 import { storeToRefs } from "pinia";
 import type { FretboardNote } from "@/types";
@@ -102,9 +102,7 @@ import TuningControls from "./TuningControls.vue";
 import { noteNames } from "@/utils/noteUtils";
 import { svgPaths } from "@/utils/svgPaths";
 
-defineProps<{
-  isScaleDegree: boolean;
-}>();
+// Component gets isScaleDegree from store - no props needed
 
 const visibleNotes = computed(() =>
   fretboardNotes.value.filter(

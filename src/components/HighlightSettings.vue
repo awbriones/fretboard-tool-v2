@@ -149,7 +149,7 @@ function toggleShow(index: number) {
   const currentSettings = [...scaleDegreeSettings.value];
   currentSettings[index] = { ...currentSettings[index], show: !currentSettings[index].show };
   store.setScaleDegreeSettings(currentSettings);
-  updateKey.value++; // Force a re-render of the entire component
+  updateKey.value++; // Force immediate re-render
 }
 
 function toggleColor(index: number) {
@@ -175,14 +175,10 @@ watch(
   }
 );
 
-watch(selectedScale, () => {
-  // Scale change is handled by the store watcher that clears manual settings
-});
 
 // Force a re-render when isScaleDegree changes
-const key = ref(0);
 watch(isScaleDegree, () => {
-  key.value++;
+  updateKey.value++;
 });
 
 onMounted(() => {
