@@ -27,7 +27,7 @@
         v-for="(_, index) in store.tuning"
         :key="`string-${index}`"
         :x1="margin.left"
-        :x2="width - margin.right"
+        :x2="width - stringPadding"
         :y1="getStringY(store.tuning.length - 1 - index)"
         :y2="getStringY(store.tuning.length - 1 - index)"
         :stroke-width="1 + index / 1.5"
@@ -69,7 +69,7 @@
 
       <!-- Notes -->
       <transition-group name="note-marker">
-        <g v-for="note in visibleNotes" :key="note.id" class="note-marker">
+        <g v-for="note in visibleNotes" :key="note.id" class="note-marker" :class="{ 'hover-active': hoveredNoteId === note.id }">
           <circle :cx="getX(note.fret)" :cy="getY(note.string)" r="20" :fill="getNoteColor(note)" />
           <svg
             :x="getX(note.fret) - 20"
@@ -89,6 +89,21 @@
           </svg>
         </g>
       </transition-group>
+
+      <!-- Interactive areas for all fret positions (rendered on top) -->
+      <g v-for="note in fretboardNotes" :key="`interactive-${note.id}`" class="interactive-marker">
+        <rect
+          :x="getInteractiveX(note.fret)"
+          :y="getInteractiveY(note.string)"
+          :width="getInteractiveWidth(note.fret)"
+          :height="cellHeight"
+          fill="transparent"
+          class="interactive-area"
+          @click="handleNoteClick(note)"
+          @mouseover="handleNoteHover(note, true)"
+          @mouseout="handleNoteHover(note, false)"
+        />
+      </g>
     </svg>
   </div>
 </template>
@@ -122,10 +137,15 @@ const {
 
 const fretboardContainer = ref<HTMLDivElement | null>(null);
 const fretboardSvg = ref<SVGSVGElement | null>(null);
+const hoveredNoteId = ref<string | null>(null);
 
 const margin = { top: 64, right: 20, bottom: 30, left: 56 };
 const width = ref(1000);
 const height = ref(375);
+
+// Configurable padding controls
+const stringPadding = ref(24); // Distance from right edge to string ends
+const fretPadding = ref(28); // Distance from right edge to 15th fret (allows space for notes)
 
 const updateDimensions = () => {
   if (fretboardContainer.value) {
@@ -148,7 +168,7 @@ const cellHeight = computed(
 );
 
 const fretPositions = computed(() => {
-  const scaleLength = width.value - margin.left - margin.right - 8; // Subtracting 32 as in the original
+  const scaleLength = width.value - margin.left - fretPadding.value;
   //const rule = 17.817; // This is closer to the standard rule for fret positioning
   const rule = 17.817; // This is closer to the standard rule for fret positioning
 
@@ -237,6 +257,44 @@ const getNoteSvg = computed(() => (note: FretboardNote) => {
 
 function handleTuningChanged(newTuning: string[]) {
   store.setTuning(newTuning);
+}
+
+function handleNoteClick(note: FretboardNote) {
+  // Set the clicked note as the new root note
+  store.setRootNote(note.name);
+}
+
+function getInteractiveX(fret: number) {
+  if (fret === 0) {
+    // Open string: start from left margin
+    return margin.left;
+  } else {
+    // Fretted note: start from previous fret position
+    return fretPositions.value[fret - 1];
+  }
+}
+
+function getInteractiveY(string: number) {
+  // Center the interactive area on the string
+  return getY(string) - cellHeight.value / 2;
+}
+
+function getInteractiveWidth(fret: number) {
+  if (fret === 0) {
+    // Open string: width from left margin to first fret
+    return fretPositions.value[0] - margin.left;
+  } else {
+    // Fretted note: width between current and previous fret
+    return fretPositions.value[fret] - fretPositions.value[fret - 1];
+  }
+}
+
+function handleNoteHover(note: FretboardNote, isHovered: boolean) {
+  if (isHovered) {
+    hoveredNoteId.value = note.id;
+  } else {
+    hoveredNoteId.value = null;
+  }
 }
 </script>
 
@@ -348,5 +406,25 @@ g.note-circle:active {
 
 .note-marker path {
   transition: fill 0.3s ease-out;
+}
+
+/* Interactive markers for all fret positions */
+.interactive-marker {
+  cursor: pointer;
+}
+
+.interactive-area {
+  /* Debug: uncomment to see interactive areas */
+  /* fill: rgba(255, 0, 0, 0.1) !important; */
+}
+
+/* Hover effects on visible notes only */
+.note-marker.hover-active {
+  transform: scale(1.1);
+}
+
+.note-marker {
+  transition: transform 0.15s ease-out;
+  transform-origin: center;
 }
 </style>
