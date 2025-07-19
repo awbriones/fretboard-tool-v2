@@ -172,11 +172,14 @@ function getDimColor(index: number) {
     // When colors are OFF: bright buttons should be shade-60, dimmed buttons shade-40
     return setting.bright ? "var(--shade-60)" : "var(--shade-40)";
   }
-  // index now represents chromatic interval directly
-  const colorIndex = index % 12;
-  return setting.bright
-    ? `var(--color-${colorIndex})`
-    : `var(--color-${colorIndex}-dimmed)`;
+  // When colors are ON: active dim buttons shade-60, inactive dim buttons shade-40
+  return setting.bright ? "var(--shade-60)" : "var(--shade-40)";
+  
+  // Alternative colored approach (may want to return to this):
+  // const colorIndex = index % 12;
+  // return setting.bright
+  //   ? `var(--color-${colorIndex})`
+  //   : `var(--color-${colorIndex}-dimmed)`;
 }
 
 function toggleShow(index: number) {

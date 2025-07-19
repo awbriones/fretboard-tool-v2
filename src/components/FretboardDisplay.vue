@@ -79,9 +79,10 @@
       <transition-group name="note-marker">
         <g
           v-for="note in visibleNotes"
-          :key="`${note.id}-${rootNote}-${selectedScaleName}`"
+          :key="`position-${note.fret}-${note.string}-${selectedScaleName}`"
           class="note-marker"
           :class="{ 'hover-active': hoveredNoteId === note.id }"
+          :style="{ opacity: hoveredNoteId === note.id ? 0 : 1 }"
         >
           <!-- Background circle with stroke -->
           <circle
@@ -117,6 +118,50 @@
           </svg>
         </g>
       </transition-group>
+
+      <!-- Hovered note layer (renders on top) -->
+      <g
+        v-if="hoveredNoteId"
+        :key="`hovered-${hoveredNoteId}`"
+        class="note-marker hover-active"
+      >
+        <template v-for="note in visibleNotes" :key="note.id">
+          <template v-if="note.id === hoveredNoteId">
+            <!-- Background circle with stroke -->
+            <circle
+              :cx="getX(note.fret)"
+              :cy="getY(note.string)"
+              r="24"
+              :fill="getBackgroundColor(note)"
+              stroke="none"
+            />
+            <!-- Foreground circle with fill -->
+            <circle
+              :cx="getX(note.fret)"
+              :cy="getY(note.string)"
+              r="20"
+              :fill="getNoteColor(note)"
+              stroke="none"
+            />
+            <svg
+              :x="getX(note.fret) - 20"
+              :y="getY(note.string) - 20"
+              width="40"
+              height="40"
+              :viewBox="getNoteSvg(note).viewBox"
+            >
+              <path
+                v-for="(path, index) in getNoteSvg(note).paths"
+                :key="index"
+                :d="path.d"
+                :fill="getTextColor(note)"
+                :fill-rule="path.fillRule"
+                :clip-rule="path.clipRule"
+              />
+            </svg>
+          </template>
+        </template>
+      </g>
 
       <!-- Interactive areas for all fret positions (rendered on top) -->
       <g
@@ -165,6 +210,14 @@ const {
 // Track notes for delayed removal during exit animations
 const notesToShow = ref(new Set<string>());
 const exitTimeouts = ref(new Map<string, number>());
+
+function getZIndex(note: FretboardNote) {
+  // Base z-index: lower frets (closer to nut) have higher z-index
+  // Fret 0 (open) = 100, fret 1 = 99, fret 2 = 98, etc.
+  const baseZIndex = 100 - note.fret;
+
+  return baseZIndex;
+}
 
 // Compute which notes should be visible based on current settings
 const shouldBeVisible = computed(() => {
@@ -221,16 +274,25 @@ watch(
   { immediate: true }
 );
 
-// Final visible notes list including those currently exiting
-const visibleNotes = computed(() =>
-  fretboardNotes.value.filter((note) => notesToShow.value.has(note.id))
-);
+// Final visible notes list including those currently exiting, sorted by z-index priority
+const visibleNotes = computed(() => {
+  const filtered = fretboardNotes.value.filter((note) =>
+    notesToShow.value.has(note.id)
+  );
+
+  // Sort by z-index priority (higher z-index last, so they render on top)
+  return filtered.sort((a, b) => {
+    const aZIndex = getZIndex(a);
+    const bZIndex = getZIndex(b);
+    return bZIndex - aZIndex; // Reversed: higher values come last
+  });
+});
 
 const fretboardContainer = ref<HTMLDivElement | null>(null);
 const fretboardSvg = ref<SVGSVGElement | null>(null);
 const hoveredNoteId = ref<string | null>(null);
 
-const margin = { top: 64, right: 20, bottom: 30, left: 56 };
+const margin = { top: 48, right: 20, bottom: 40, left: 56 };
 const width = ref(1000);
 const height = ref(375);
 
@@ -425,8 +487,9 @@ function handleNoteHover(note: FretboardNote, isHovered: boolean) {
   border-radius: 24px;
   min-width: 900px;
   width: 100%;
-  height: 375px;
+  height: 340px;
   padding-bottom: 12px;
+  padding-top: 4px;
 }
 
 .nut {
@@ -541,7 +604,7 @@ g.note-circle:active {
 
 /* Hover effects on visible notes only */
 .note-marker.hover-active {
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
 .note-marker {
