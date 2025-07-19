@@ -22,6 +22,7 @@ interface FretboardState {
   setIsScaleDegree: (value: boolean) => void;
   scaleDegreeSettings: ComputedRef<ScaleDegreeSetting[]>;
   setScaleDegreeSettings: (settings: ScaleDegreeSetting[]) => void;
+  switchToCustomMode: () => void;
   isGuitar: Ref<boolean>; // Add the 'isGuitar' property
   setInstrument: (guitar: boolean) => void; // Add the 'setInstrument' property
 }
@@ -60,7 +61,7 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
     const currentScale = selectedScale.value;
     const scaleIntervals = currentScale?.intervals || [];
     
-    // Always return 12 chromatic settings for all scales
+    // Always use standard scale logic - Custom mode is just a label
     return Array.from({ length: 12 }, (_, chromaticIndex) => {
       const isInScale = scaleIntervals.includes(chromaticIndex);
       
@@ -70,9 +71,6 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
       }
       
       // Note is in scale: apply styling based on harmonic function
-      // Use the actual chromatic intervals present in this scale to determine styling
-      
-      // Apply styling based on harmonic function (regardless of scale name)
       if (chromaticIndex === 0) {
         // Root note: always bright + colored
         return { show: true, color: true, bright: true };
@@ -119,6 +117,11 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
 
   function setSelectedScale(scaleName: string) {
     if (scales.value[scaleName]) {
+      // If switching TO Custom mode manually, preserve current settings
+      if (scaleName === 'custom' && manualScaleDegreeSettings.value.length === 0) {
+        // Save current computed settings as manual settings to preserve them
+        manualScaleDegreeSettings.value = [...scaleDegreeSettings.value];
+      }
       selectedScaleName.value = scaleName;
     } else {
       // eslint-disable-next-line no-console
@@ -154,9 +157,21 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
     logDebugState(`Manual settings update via setScaleDegreeSettings`);
   }
 
-  // Clear manual settings when scale changes
+  function switchToCustomMode() {
+    // Just switch the dropdown to "Custom" without changing any settings
+    if (selectedScaleName.value !== 'custom') {
+      selectedScaleName.value = 'custom';
+      logDebugState(`Auto-switched to Custom mode (label only)`);
+    }
+  }
+
+
+  // Clear manual settings when scale changes (but NOT when switching to/from Custom)
   watch(selectedScaleName, (newScale, oldScale) => {
-    manualScaleDegreeSettings.value = [];
+    // Don't clear manual settings when switching to Custom mode
+    if (newScale !== 'custom') {
+      manualScaleDegreeSettings.value = [];
+    }
     logDebugState(`Scale changed from ${oldScale} to ${newScale}`);
   });
 
@@ -248,6 +263,7 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
     setIsScaleDegree,
     scaleDegreeSettings: finalScaleDegreeSettings,
     setScaleDegreeSettings,
+    switchToCustomMode,
     isGuitar,
     setInstrument,
   };

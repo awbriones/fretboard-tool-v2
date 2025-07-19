@@ -151,6 +151,7 @@ function toggleShow(index: number) {
   const currentSettings = [...scaleDegreeSettings.value];
   currentSettings[index] = { ...currentSettings[index], show: !currentSettings[index].show };
   store.setScaleDegreeSettings(currentSettings);
+  store.switchToCustomMode(); // Auto-switch dropdown to Custom (label only)
   updateKey.value++; // Force immediate re-render
 }
 

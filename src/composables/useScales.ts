@@ -52,6 +52,13 @@ export function useScales() {
       intervalNames: ["1P", "2m", "2M", "3m", "3M", "4P", "4A", "5P", "6m", "6M", "7m", "7M"]
     },
 
+    // Custom scale - user-defined note selection
+    custom: {
+      name: "Custom",
+      intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      intervalNames: ["1P", "2m", "2M", "3m", "3M", "4P", "4A", "5P", "6m", "6M", "7m", "7M"]
+    },
+
     // Add more scales here as needed:
     // "harmonic minor": generateScaleFromTonal("harmonic minor"),
     // "melodic minor": generateScaleFromTonal("melodic minor"),
