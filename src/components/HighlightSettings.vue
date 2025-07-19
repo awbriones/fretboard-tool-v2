@@ -7,8 +7,13 @@
           v-for="(setting, index) in scaleDegreeSettings"
           :key="`show-${index}`"
           class="show-button"
-          :class="{ hidden: !setting.show }"
-          :style="{ backgroundColor: getNoteColor(index) }"
+          :class="{
+            'show-button--visible': setting.show,
+            'show-button--hidden': !setting.show,
+            'show-button--colored': setting.color,
+            'show-button--bright': setting.bright,
+          }"
+          :style="setting.show ? { backgroundColor: getNoteColor(index) } : {}"
           @click="toggleShow(index)"
         >
           <svg :viewBox="getButtonSvg(index)?.viewBox" width="40" height="40">
@@ -30,8 +35,14 @@
           v-for="(setting, index) in scaleDegreeSettings"
           :key="`color-${index}`"
           class="color-button"
-          :class="{ active: setting.color, hidden: !setting.show }"
-          :style="{ fill: setting.color ? getNoteColor(index) : 'var(--light-48)' }"
+          :class="{
+            'color-button--active': setting.color,
+            'color-button--inactive': !setting.color,
+            'color-button--hidden': !setting.show,
+          }"
+          :style="{
+            fill: getColorButtonColor(index),
+          }"
           @click="toggleColor(index)"
         >
           <svg :viewBox="getSvgPath('colors')?.viewBox">
@@ -46,12 +57,16 @@
       </div>
 
       <div class="control-row dim-row">
-        <span class="row-label">Dim</span>
+        <span class="row-label">Bright</span>
         <button
           v-for="(setting, index) in scaleDegreeSettings"
           :key="`dim-${index}`"
           class="dim-button"
-          :class="{ active: !setting.bright, hidden: !setting.show }"
+          :class="{
+            'dim-button--bright': setting.bright,
+            'dim-button--dimmed': !setting.bright,
+            'dim-button--hidden': !setting.show,
+          }"
           :style="{ fill: getDimColor(index) }"
           @click="toggleBright(index)"
         >
@@ -96,10 +111,7 @@ const { scaleDegreeSettings, rootNote, isScaleDegree } = storeToRefs(store);
 const updateKey = ref(0);
 
 function getButtonSvg(index: number) {
-  const setting = scaleDegreeSettings.value[index];
-  if (!setting.show) {
-    return getSvgPath("hidden");
-  }
+  // Always show the note/degree label, never the hidden icon
   return getNoteSvg.value(index);
 }
 
@@ -115,41 +127,64 @@ const getNoteSvg = computed(() => (index: number) => {
 
 function getNoteColor(index: number) {
   const setting = scaleDegreeSettings.value[index];
-  if (!setting.show) return "var(--gray-01)";
 
   if (!setting.color) {
-    return setting.bright ? "var(--gray-01)" : "var(--black-03)";
+    // Show buttons: bright = shade-60 bg, dim = shade-30 bg
+    return setting.bright ? "var(--shade-60)" : "var(--shade-30)";
   }
 
   // index now represents chromatic interval directly
   const colorIndex = index % 12;
-  return setting.bright ? `var(--color-${colorIndex})` : `var(--color-${colorIndex}-dimmed)`;
+  return setting.bright
+    ? `var(--color-${colorIndex})`
+    : `var(--color-${colorIndex}-dimmed)`;
 }
 
 function getTextColor(index: number) {
   const setting = scaleDegreeSettings.value[index];
-  if (!setting.show) return "var(--light-48)";
+  
+  // Show buttons OFF: shade-40
+  if (!setting.show) return "var(--shade-40)";
 
   if (!setting.color) {
-    return setting.bright ? "var(--white-01)" : "var(--light-24)";
+    // Show buttons ON + brightness OFF: shade-60 text
+    // Show buttons ON + brightness ON: shade-10 text
+    return setting.bright ? "var(--shade-10)" : "var(--shade-60)";
   }
 
-  return setting.bright ? "var(--black-02)" : "var(--light-48)";
+  // When color is enabled, use dark text on bright colors, light text on dim colors
+  return setting.bright ? "var(--shade-20)" : "var(--light-48)";
+}
+
+function getColorButtonColor(index: number) {
+  const setting = scaleDegreeSettings.value[index];
+  if (!setting.color) {
+    return "var(--shade-40)";
+  }
+  // Always use bright color for color button icons for better contrast
+  const colorIndex = index % 12;
+  return `var(--color-${colorIndex})`;
 }
 
 function getDimColor(index: number) {
   const setting = scaleDegreeSettings.value[index];
   if (!setting.color) {
-    return setting.bright ? "var(--light-48)" : "var(--light-24)";
+    // When colors are OFF: bright buttons should be shade-60, dimmed buttons shade-40
+    return setting.bright ? "var(--shade-60)" : "var(--shade-40)";
   }
   // index now represents chromatic interval directly
   const colorIndex = index % 12;
-  return setting.bright ? `var(--color-${colorIndex})` : `var(--color-${colorIndex}-dimmed)`;
+  return setting.bright
+    ? `var(--color-${colorIndex})`
+    : `var(--color-${colorIndex}-dimmed)`;
 }
 
 function toggleShow(index: number) {
   const currentSettings = [...scaleDegreeSettings.value];
-  currentSettings[index] = { ...currentSettings[index], show: !currentSettings[index].show };
+  currentSettings[index] = {
+    ...currentSettings[index],
+    show: !currentSettings[index].show,
+  };
   store.setScaleDegreeSettings(currentSettings);
   store.switchToCustomMode(); // Auto-switch dropdown to Custom (label only)
   updateKey.value++; // Force immediate re-render
@@ -157,13 +192,19 @@ function toggleShow(index: number) {
 
 function toggleColor(index: number) {
   const currentSettings = [...scaleDegreeSettings.value];
-  currentSettings[index] = { ...currentSettings[index], color: !currentSettings[index].color };
+  currentSettings[index] = {
+    ...currentSettings[index],
+    color: !currentSettings[index].color,
+  };
   store.setScaleDegreeSettings(currentSettings);
 }
 
 function toggleBright(index: number) {
   const currentSettings = [...scaleDegreeSettings.value];
-  currentSettings[index] = { ...currentSettings[index], bright: !currentSettings[index].bright };
+  currentSettings[index] = {
+    ...currentSettings[index],
+    bright: !currentSettings[index].bright,
+  };
   store.setScaleDegreeSettings(currentSettings);
 }
 
@@ -178,7 +219,6 @@ watch(
   }
 );
 
-
 // Force a re-render when isScaleDegree changes
 watch(isScaleDegree, () => {
   updateKey.value++;
@@ -191,7 +231,7 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .highlighting-settings {
-  background: var(--black-02);
+  background: var(--shade-20);
   border-radius: 8px;
   padding: 24px;
 }
@@ -204,20 +244,20 @@ onMounted(() => {
 .control-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .row-label {
   width: 40px;
   text-align: left;
-  color: var(--gray-03);
+  color: var(--shade-70);
   font-size: 14px;
   margin-right: 24px;
 }
 
 button {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   border: none;
   display: flex;
@@ -228,36 +268,46 @@ button {
 }
 
 .show-button {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  border: none;
+  border: 4px solid var(--shade-10);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  background-color: var(--shade-10);
 
   svg {
-    width: 40px;
+    width: 48px;
     height: 100%;
   }
 
-  &.hidden {
-    background-color: var(--gray-01) !important;
+  // New state-based classes for show buttons
+  &.show-button--visible {
+    // Styles for visible/shown notes - default styling
+  }
 
-    svg {
-      width: 24px;
-      height: 24px;
-    }
+  &.show-button--hidden {
+    // Styles for hidden notes - you can customize opacity, background, etc.
+    background-color: var(--shade-10);
+  }
+
+  &.show-button--colored {
+    // Additional styles when the note has color enabled
+  }
+
+  &.show-button--bright {
+    // Additional styles when the note has brightness enabled
   }
 }
 
 .color-button,
 .dim-button {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   border: none;
   display: flex;
@@ -265,18 +315,40 @@ button {
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  background-color: transparent;
+  background-color: var(--shade-10);
+  border: 4px solid var(--shade-10);
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
   }
 
-  &.hidden {
+  // New state-based classes for color buttons
+  &.color-button--active {
+    background-color: var(--shade-30) !important;
+  }
+  &.color-button--inactive {
+    background-color: var(--shade-10) !important;
+  }
+  &.color-button--hidden {
     visibility: hidden;
   }
+  
+  // New state-based classes for dim buttons  
+  &.dim-button--bright {
+    // Styles when note is bright
+    background-color: var(--shade-30) !important;
+  }
+  &.dim-button--dimmed {
+    // Styles when note is dimmed
+    background-color: var(--shade-10) !important;
+  }
+  &.dim-button--hidden {
+    visibility: hidden;
+  }
+
   &:hover {
-    background-color: var(--black-01);
+    // hover styles
   }
 }
 
@@ -291,8 +363,8 @@ button {
 }
 
 .label-option {
-  background-color: var(--black-02);
-  color: var(--gray-03);
+  background-color: var(--shade-20);
+  color: var(--shade-60);
   padding: 8px 16px;
   border-radius: 32px;
   border: none;
@@ -303,12 +375,12 @@ button {
   width: inherit;
 
   &:hover {
-    background-color: var(--black-03);
+    background-color: var(--shade-30);
   }
 
   &.active {
-    background-color: var(--black-03);
-    color: var(--white-02);
+    background-color: var(--shade-30);
+    color: var(--shade-70);
   }
 }
 </style>

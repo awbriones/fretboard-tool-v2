@@ -9,7 +9,12 @@
       @tuning-changed="handleTuningChanged"
     />
 
-    <svg :width="width" :height="height" :viewBox="`0 0 ${width} ${height}`" ref="fretboardSvg">
+    <svg
+      :width="width"
+      :height="height"
+      :viewBox="`0 0 ${width} ${height}`"
+      ref="fretboardSvg"
+    >
       <!-- Frets -->
       <line
         v-for="(position, index) in fretPositions"
@@ -35,7 +40,10 @@
       />
 
       <!-- Fret markers -->
-      <g v-for="(position, index) in fretPositions.slice(1)" :key="`marker-${index}`">
+      <g
+        v-for="(position, index) in fretPositions.slice(1)"
+        :key="`marker-${index}`"
+      >
         <text
           :x="(position + fretPositions[index]) / 2"
           :y="margin.top / 2"
@@ -69,8 +77,28 @@
 
       <!-- Notes -->
       <transition-group name="note-marker">
-        <g v-for="note in visibleNotes" :key="note.id" class="note-marker" :class="{ 'hover-active': hoveredNoteId === note.id }">
-          <circle :cx="getX(note.fret)" :cy="getY(note.string)" r="20" :fill="getNoteColor(note)" />
+        <g
+          v-for="note in visibleNotes"
+          :key="`${note.id}-${rootNote}-${selectedScaleName}`"
+          class="note-marker"
+          :class="{ 'hover-active': hoveredNoteId === note.id }"
+        >
+          <!-- Background circle with stroke -->
+          <circle
+            :cx="getX(note.fret)"
+            :cy="getY(note.string)"
+            r="24"
+            :fill="getBackgroundColor(note)"
+            stroke="none"
+          />
+          <!-- Foreground circle with fill -->
+          <circle
+            :cx="getX(note.fret)"
+            :cy="getY(note.string)"
+            r="20"
+            :fill="getNoteColor(note)"
+            stroke="none"
+          />
           <svg
             :x="getX(note.fret) - 20"
             :y="getY(note.string) - 20"
@@ -91,7 +119,11 @@
       </transition-group>
 
       <!-- Interactive areas for all fret positions (rendered on top) -->
-      <g v-for="note in fretboardNotes" :key="`interactive-${note.id}`" class="interactive-marker">
+      <g
+        v-for="note in fretboardNotes"
+        :key="`interactive-${note.id}`"
+        class="interactive-marker"
+      >
         <rect
           :x="getInteractiveX(note.fret)"
           :y="getInteractiveY(note.string)"
@@ -109,7 +141,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useFretboardStore } from "@/stores/fretboard";
 import { storeToRefs } from "pinia";
 import type { FretboardNote } from "@/types";
@@ -119,17 +151,6 @@ import { svgPaths } from "@/utils/svgPaths";
 
 // Component gets isScaleDegree from store - no props needed
 
-const visibleNotes = computed(() =>
-  fretboardNotes.value.filter(
-    (note) => {
-      // Use chromatic interval (0-11) for indexing into the 12-note settings
-      const chromaticIndex = note.interval % 12;
-      return scaleDegreeSettings.value[chromaticIndex]?.show || false;
-    }
-  )
-);
-1;
-
 const store = useFretboardStore();
 const {
   scaleDegreeSettings,
@@ -137,7 +158,73 @@ const {
   numFrets,
   fretboardNotes,
   isGuitar,
+  rootNote,
+  selectedScaleName,
 } = storeToRefs(store);
+
+// Track notes for delayed removal during exit animations
+const notesToShow = ref(new Set<string>());
+const exitTimeouts = ref(new Map<string, number>());
+
+// Compute which notes should be visible based on current settings
+const shouldBeVisible = computed(() => {
+  const noteIds = new Set<string>();
+  fretboardNotes.value.forEach((note) => {
+    const chromaticIndex = note.interval % 12;
+    if (scaleDegreeSettings.value[chromaticIndex]?.show) {
+      noteIds.add(note.id);
+    }
+  });
+  return noteIds;
+});
+
+// Watch for visibility changes and handle exit timing
+watch(
+  shouldBeVisible,
+  (newVisibleIds, oldVisibleIds) => {
+    if (!oldVisibleIds) {
+      // Initial load - add all visible notes immediately
+      newVisibleIds.forEach((id) => notesToShow.value.add(id));
+      return;
+    }
+
+    // Find notes that should start entering
+    const entering = new Set(
+      [...newVisibleIds].filter((id) => !oldVisibleIds.has(id))
+    );
+
+    // Find notes that should start exiting
+    const exiting = new Set(
+      [...oldVisibleIds].filter((id) => !newVisibleIds.has(id))
+    );
+
+    // Add entering notes immediately
+    entering.forEach((id) => {
+      notesToShow.value.add(id);
+      // Cancel any pending exit
+      const existingTimeout = exitTimeouts.value.get(id);
+      if (existingTimeout) {
+        clearTimeout(existingTimeout);
+        exitTimeouts.value.delete(id);
+      }
+    });
+
+    // Handle exiting notes with delay
+    exiting.forEach((id) => {
+      const timeoutId = setTimeout(() => {
+        notesToShow.value.delete(id);
+        exitTimeouts.value.delete(id);
+      }, 300); // Match CSS transition duration
+      exitTimeouts.value.set(id, timeoutId);
+    });
+  },
+  { immediate: true }
+);
+
+// Final visible notes list including those currently exiting
+const visibleNotes = computed(() =>
+  fretboardNotes.value.filter((note) => notesToShow.value.has(note.id))
+);
 
 const fretboardContainer = ref<HTMLDivElement | null>(null);
 const fretboardSvg = ref<SVGSVGElement | null>(null);
@@ -165,6 +252,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener("resize", updateDimensions);
+  // Clean up any pending timeouts
+  exitTimeouts.value.forEach((timeoutId) => clearTimeout(timeoutId));
+  exitTimeouts.value.clear();
 });
 
 const cellHeight = computed(
@@ -213,47 +303,72 @@ function getX(fret: number) {
 }
 
 function getY(string: number) {
-  return height.value - margin.bottom - cellHeight.value * string - cellHeight.value / 2;
+  return (
+    height.value -
+    margin.bottom -
+    cellHeight.value * string -
+    cellHeight.value / 2
+  );
 }
 
 function getStringY(index: number) {
-  return height.value - margin.bottom - cellHeight.value * index - cellHeight.value / 2;
+  return (
+    height.value -
+    margin.bottom -
+    cellHeight.value * index -
+    cellHeight.value / 2
+  );
 }
 
 function getNoteColor(note: FretboardNote) {
   // Use chromatic interval (0-11) for indexing into the 12-note settings
   const chromaticIndex = note.interval % 12;
   const setting = scaleDegreeSettings.value[chromaticIndex];
-  
+
   if (!setting || !setting.show) return "transparent";
 
   if (!setting.color) {
-    return setting.bright ? "var(--gray-01)" : "var(--black-03)";
+    // Notes shown, not colored: bright = shade-60 bg, dim = shade-30 bg
+    return setting.bright ? "var(--shade-60)" : "var(--shade-30)";
   }
 
   const colorIndex = note.interval % 12;
-  return setting.bright ? `var(--color-${colorIndex})` : `var(--color-${colorIndex}-dimmed)`;
+  return setting.bright
+    ? `var(--color-${colorIndex})`
+    : `var(--color-${colorIndex}-dimmed)`;
+}
+
+function getBackgroundColor(note: FretboardNote) {
+  // Use chromatic interval (0-11) for indexing into the 12-note settings
+  const chromaticIndex = note.interval % 12;
+  const setting = scaleDegreeSettings.value[chromaticIndex];
+
+  if (!setting || !setting.show) return "transparent";
+
+  return "var(--shade-20)";
 }
 
 function getTextColor(note: FretboardNote) {
   // Use chromatic interval (0-11) for indexing into the 12-note settings
   const chromaticIndex = note.interval % 12;
   const setting = scaleDegreeSettings.value[chromaticIndex];
-  
+
   if (!setting || !setting.show) return "transparent";
 
   if (!setting.color) {
-    return setting.bright ? "var(--white-01)" : "var(--light-24)";
+    // Notes shown, not colored: bright = shade-10 text, dim = shade-60 text
+    return setting.bright ? "var(--shade-10)" : "var(--shade-60)";
   }
 
-  return setting.bright ? "var(--black-02)" : "var(--light-48)";
+  return setting.bright ? "var(--shade-20)" : "var(--light-48)";
 }
 
 const getNoteSvg = computed(() => (note: FretboardNote) => {
   if (isScaleDegree.value) {
     return svgPaths[`degree_${note.interval.toString().padStart(2, "0")}`];
   } else {
-    const noteIndex = (noteNames.indexOf(note.name) - noteNames.indexOf("C") + 12) % 12;
+    const noteIndex =
+      (noteNames.indexOf(note.name) - noteNames.indexOf("C") + 12) % 12;
     return svgPaths[`note_${noteIndex.toString().padStart(2, "0")}`];
   }
 });
@@ -306,7 +421,7 @@ function handleNoteHover(note: FretboardNote, isHovered: boolean) {
 
 <style scoped>
 .fretboard {
-  background: var(--black-02);
+  background: var(--shade-20);
   border-radius: 24px;
   min-width: 900px;
   width: 100%;
@@ -315,32 +430,32 @@ function handleNoteHover(note: FretboardNote, isHovered: boolean) {
 }
 
 .nut {
-  stroke: var(--white-01);
+  stroke: var(--shade-70);
   stroke-width: 2;
 }
 
 .fret {
-  stroke: var(--gray-02);
+  stroke: var(--shade-50);
   stroke-width: 2;
 }
 
 .string {
-  stroke: var(--white-01);
+  stroke: var(--shade-70);
 }
 
 .fret-number-label {
   font-size: 16px;
   font-weight: 600;
   text-anchor: middle;
-  fill: var(--gray-03);
+  fill: var(--shade-60);
 }
 
 .fret-marker {
-  fill: var(--gray-03);
+  fill: var(--shade-60);
 }
 
 .note-circle {
-  fill: var(--gray-01);
+  fill: var(--shade-40);
   transition: all 0.12s ease-out;
   cursor: pointer;
   transform-box: fill-box;
@@ -350,7 +465,7 @@ function handleNoteHover(note: FretboardNote, isHovered: boolean) {
 }
 
 .note-label {
-  fill: var(--white-01);
+  fill: var(--shade-70);
   font-size: 18px;
   font-weight: 600;
   text-anchor: middle;
@@ -403,14 +518,14 @@ g.note-circle:active {
 .note-marker circle {
   transform-box: border-box;
   transform-origin: center;
-  transition: transform 0.3s ease-out, opacity 0.3s ease-out, fill 0.3s ease-out;
+  transition: fill 0.3s ease-out;
 }
 
 .note-marker svg {
   transition: opacity 0.3s ease-out;
 }
 
-.note-marker path {
+.note-marker svg path {
   transition: fill 0.3s ease-out;
 }
 

@@ -1,12 +1,12 @@
 :root {
-  --black-01: #0f0f0f;
-  --black-02: #202020;
-  --black-03: #2e2e2e;
-  --gray-01: #474747;
-  --gray-02: #808080;
-  --gray-03: #a8a8a8;
-  --white-01: #f5f5f5;
-  --white-02: #eeeeee;
+  /* Shade system: lower numbers = darker */
+  --shade-10: #141414;  /* darkest */
+  --shade-20: #212121;
+  --shade-30: #363636;
+  --shade-40: #484848;
+  --shade-50: #888888;
+  --shade-60: #a6a6a6;
+  --shade-70: #ededed;  /* lightest */
 
   /* Highlight colors: */
   --red-primary: #ff6161;
@@ -63,16 +63,16 @@
   --color-10-dimmed: var(--purple-pink-dimmed);
   --color-11-dimmed: var(--pink-dimmed);
 
-  /* transparent whites */
+  /* Transparent whites */
   --light-48: rgba(255, 255, 255, 0.48);
   --light-24: rgba(255, 255, 255, 0.24);
   --light-12: rgba(255, 255, 255, 0.12);
 
-  /* Slider styles */
-  --slider-background-color: #474747;
-  --slider-checked-background-color: #474747;
-  --color-for-checked-left-label: #f5f5f5;
-  --color-for-checked-right-label: #f5f5f5;
+  /* Slider styles - using new shade system */
+  --slider-background-color: var(--shade-40);
+  --slider-checked-background-color: var(--shade-40);
+  --color-for-checked-left-label: var(--shade-70);
+  --color-for-checked-right-label: var(--shade-70);
 }
 
 html {
@@ -95,11 +95,11 @@ body {
 
 h3,
 label {
-  color: var(--white-01);
+  color: var(--shade-70);
 }
 
 h1.main-title {
-  color: var(--white-02);
+  color: var(--shade-70);
   font-size: 18px;
   margin: 0;
   white-space: nowrap;
@@ -107,7 +107,7 @@ h1.main-title {
 
 span.version {
   font-weight: normal;
-  color: var(--gray-02);
+  color: var(--shade-50);
   margin-left: 4px;
 }
 
@@ -154,11 +154,10 @@ span.version {
 
 .fretboard{
   border-radius: 24px;
-  background-color: var(--black-02);
+  background-color: var(--shade-20);
 }
 
 .fretboard-svg {
-  // background: var(--black-02);
   border-radius: 24px;
   min-width: 1000px;
   width: 100%;
@@ -176,15 +175,15 @@ span.version {
 
 .settings-container {
   padding: 24px;
-  background: var(--black-02);
+  background: var(--shade-20);
   box-shadow: 0px 4px 60px rgba(0, 0, 0, 0.24);
   border-radius: 24px;
 }
 
 .key-button {
   border: none;
-  background-color: var(--black-01);
-  color: var(--gray-02);
+  background-color: var(--shade-10);
+  color: var(--shade-50);
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -202,35 +201,30 @@ span.version {
 /* -- Form elements -- */
 .custom-select {
   appearance: none;
-  /* Remove default styling */
   -webkit-appearance: none;
-  /* Remove default styling for WebKit browsers */
   -moz-appearance: none;
-  /* Remove default styling for Mozilla browsers */
   font-family: "Jost", Avenir Next, Helvetica, Arial, sans-serif;
   user-select: none;
   height: 40px;
-
   border-radius: 20px;
-  background-color: var(--black-03);
-  border: 2px solid var(--black-03);
+  background-color: var(--shade-30);
+  border: 2px solid var(--shade-30);
   font-size: 18px;
-  color: var(--white-01);
+  color: var(--shade-70);
   padding: 0 32px 0 12px;
   background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTYgOUwxMiAxNUwxOCA5IiBzdHJva2U9IiNGNUY1RjUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=");
   background-position: right 10px center;
-  /* Position the custom arrow */
   background-repeat: no-repeat;
   transition: all 0.12s ease-out;
 }
 
 .custom-select option {
-  background-color: var(--black-02);
-  color: var(--white-01);
+  background-color: var(--shade-20);
+  color: var(--shade-70);
 }
 
-
-select.custom-select:focus-visible, .custom-select:hover {
+select.custom-select:focus-visible, 
+.custom-select:hover {
   cursor: pointer;
   border: 2px solid var(--light-24);
   outline: none;

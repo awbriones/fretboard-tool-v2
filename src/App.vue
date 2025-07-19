@@ -66,7 +66,7 @@ onMounted(() => {
 .sticky-header {
   position: sticky;
   top: 0;
-  background-color: var(--black-02);
+  background-color: var(--shade-20);
   z-index: 1000;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -88,12 +88,12 @@ onMounted(() => {
 .main-title {
   margin: 0;
   font-size: 24px;
-  color: var(--white-01);
+  color: var(--shade-70);
 }
 
 .version {
   font-size: 14px;
-  color: var(--gray-02);
+  color: var(--shade-50);
 }
 
 .main-container {

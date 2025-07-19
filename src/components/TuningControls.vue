@@ -66,9 +66,9 @@ function changeTuning(index: number, newValue: string) {
 .tuning-select {
   padding: 4px;
   font-size: 14px;
-  background-color: var(--black-01);
-  color: var(--white-01);
-  border: 1px solid var(--gray-02);
+  background-color: var(--shade-10);
+  color: var(--shade-70);
+  border: 1px solid var(--shade-50);
   width: 40px;
 }
 
@@ -82,12 +82,12 @@ select.tuning-select {
   height: 32px;
   width: 32px;
   border-radius: 20px;
-  background-color: var(--black-02);
-  border: 2px solid var(--black-02);
+  background-color: var(--shade-20);
+  border: 2px solid var(--shade-20);
   font-size: 16px;
   font-weight: 600;
   /* Make the text bold */
-  color: var(--gray-03);
+  color: var(--shade-60);
   text-align: center;
   /* Center the text */
   transition: background-color 0.12s ease-out;
@@ -96,7 +96,7 @@ select.tuning-select {
 
 select.tuning-select:hover,
 select.tuning-select:focus-visible {
-  background-color: var(--black-03);
+  background-color: var(--shade-30);
   cursor: pointer;
   border: 2px solid var(--light-12);
   outline: none;

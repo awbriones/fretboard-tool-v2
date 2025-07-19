@@ -64,7 +64,7 @@ export default {
   height: 100%;
   font-size: 18px;
   gap: 12px;
-  color: var(--gray-02);
+  color: var(--shade-50);
   transition: color 0.24s ease-out;
   background: transparent;
   padding: 0 12px;
@@ -74,19 +74,19 @@ export default {
 }
 
 .toggle-switch .toggle-switch-label:hover {
-  background: var(--black-02);
+  background: var(--shade-20);
   cursor: pointer;
 }
 
 .toggle-switch:focus-visible {
   border-radius: 20px;
-  background: var(--black-02);
+  background: var(--shade-20);
   outline: 2px solid var(--light-24);
 }
 
 .toggle-switch.right .toggle-switch-text.right,
 .toggle-switch.left .toggle-switch-text.left {
-  color: var(--white-01);
+  color: var(--shade-70);
 }
 
 .toggle-switch .toggle-switch-slider {
@@ -105,7 +105,7 @@ export default {
   width: 12px;
   left: 2px;
   bottom: 2px;
-  background-color: var(--white-01);
+  background-color: var(--shade-70);
   border-radius: 50%;
   transition: transform 0.24s ease-out;
   transform: translateX(100%);
