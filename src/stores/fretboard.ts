@@ -61,7 +61,20 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
     const currentScale = selectedScale.value;
     const scaleIntervals = currentScale?.intervals || [];
     
-    // Always use standard scale logic - Custom mode is just a label
+    // Special handling for chromatic mode
+    if (currentScale.name === "Chromatic") {
+      return Array.from({ length: 12 }, (_, chromaticIndex) => {
+        if (chromaticIndex === 0) {
+          // Root note: bright + colored
+          return { show: true, color: true, bright: true };
+        } else {
+          // All other notes: bright but not colored
+          return { show: true, color: false, bright: true };
+        }
+      });
+    }
+    
+    // Standard scale logic for all other scales
     return Array.from({ length: 12 }, (_, chromaticIndex) => {
       const isInScale = scaleIntervals.includes(chromaticIndex);
       

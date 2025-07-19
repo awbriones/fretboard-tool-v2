@@ -29,28 +29,38 @@ export function useScales() {
   // 2. Add it here using generateScaleFromTonal("<scale_name>")
   // 3. The key you use here will appear in the scale selector dropdown
   const scales = ref<Record<string, Scale>>({
-    // Modal scales
-    major: generateScaleFromTonal("major"),
-    minor: generateScaleFromTonal("minor"),
-    dorian: generateScaleFromTonal("dorian"),
-    phrygian: generateScaleFromTonal("phrygian"),
-    lydian: generateScaleFromTonal("lydian"),
-    mixolydian: generateScaleFromTonal("mixolydian"),
-    locrian: generateScaleFromTonal("locrian"),
-
-    // Pentatonic scales
-    "major pentatonic": generateScaleFromTonal("major pentatonic"),
-    "minor pentatonic": generateScaleFromTonal("minor pentatonic"),
-
-    // Blues scales
-    "minor blues": generateScaleFromTonal("minor blues"),
-
-    // Chromatic scale - all 12 semitones
+    // Chromatic - all notes
     chromatic: {
       name: "Chromatic",
       intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
       intervalNames: ["1P", "2m", "2M", "3m", "3M", "4P", "4A", "5P", "6m", "6M", "7m", "7M"]
     },
+
+    // --- SEPARATOR ---
+
+    // Basic scales
+    major: generateScaleFromTonal("major"),
+    minor: generateScaleFromTonal("minor"),
+
+    // --- SEPARATOR ---
+
+    // All 7 modes
+    ionian: { ...generateScaleFromTonal("major"), name: "Ionian" },
+    dorian: generateScaleFromTonal("dorian"),
+    phrygian: generateScaleFromTonal("phrygian"),
+    lydian: generateScaleFromTonal("lydian"),
+    mixolydian: generateScaleFromTonal("mixolydian"),
+    aeolian: { ...generateScaleFromTonal("minor"), name: "Aeolian" },
+    locrian: generateScaleFromTonal("locrian"),
+
+    // --- SEPARATOR ---
+
+    // Pentatonic and Blues
+    "major pentatonic": { ...generateScaleFromTonal("major pentatonic"), name: "Major Pentatonic" },
+    "minor pentatonic": { ...generateScaleFromTonal("minor pentatonic"), name: "Minor Pentatonic" },
+    "blues": { ...generateScaleFromTonal("minor blues"), name: "Blues" },
+
+    // --- SEPARATOR ---
 
     // Custom scale - user-defined note selection
     custom: {
@@ -58,11 +68,6 @@ export function useScales() {
       intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
       intervalNames: ["1P", "2m", "2M", "3m", "3M", "4P", "4A", "5P", "6m", "6M", "7m", "7M"]
     },
-
-    // Add more scales here as needed:
-    // "harmonic minor": generateScaleFromTonal("harmonic minor"),
-    // "melodic minor": generateScaleFromTonal("melodic minor"),
-    // "whole tone": generateScaleFromTonal("whole tone"),
   });
 
   // const selectedScale = ref("major");
