@@ -92,7 +92,7 @@ import { getSvgPath } from "@/utils/svgPaths";
 import { noteNames } from "@/utils/noteUtils";
 
 const store = useFretboardStore();
-const { scaleDegreeSettings, selectedScale, rootNote, isScaleDegree } = storeToRefs(store);
+const { scaleDegreeSettings, rootNote, isScaleDegree } = storeToRefs(store);
 const updateKey = ref(0);
 
 function getButtonSvg(index: number) {
@@ -104,11 +104,11 @@ function getButtonSvg(index: number) {
 }
 
 const getNoteSvg = computed(() => (index: number) => {
-  const scaleIntervals = selectedScale.value.intervals;
+  // index now represents chromatic interval (0-11) directly
   if (isScaleDegree.value) {
-    return getSvgPath(`degree_${scaleIntervals[index].toString().padStart(2, "0")}`);
+    return getSvgPath(`degree_${index.toString().padStart(2, "0")}`);
   } else {
-    const noteIndex = (scaleIntervals[index] + noteNames.indexOf(rootNote.value)) % 12;
+    const noteIndex = (index + noteNames.indexOf(rootNote.value)) % 12;
     return getSvgPath(`note_${noteIndex.toString().padStart(2, "0")}`);
   }
 });
@@ -121,7 +121,8 @@ function getNoteColor(index: number) {
     return setting.bright ? "var(--gray-01)" : "var(--black-03)";
   }
 
-  const colorIndex = selectedScale.value.intervals[index] % 12;
+  // index now represents chromatic interval directly
+  const colorIndex = index % 12;
   return setting.bright ? `var(--color-${colorIndex})` : `var(--color-${colorIndex}-dimmed)`;
 }
 
@@ -141,7 +142,8 @@ function getDimColor(index: number) {
   if (!setting.color) {
     return setting.bright ? "var(--light-48)" : "var(--light-24)";
   }
-  const colorIndex = selectedScale.value.intervals[index] % 12;
+  // index now represents chromatic interval directly
+  const colorIndex = index % 12;
   return setting.bright ? `var(--color-${colorIndex})` : `var(--color-${colorIndex}-dimmed)`;
 }
 

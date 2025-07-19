@@ -121,7 +121,11 @@ import { svgPaths } from "@/utils/svgPaths";
 
 const visibleNotes = computed(() =>
   fretboardNotes.value.filter(
-    (note) => note.scaleDegree !== null && scaleDegreeSettings.value[note.scaleDegree - 1].show
+    (note) => {
+      // Use chromatic interval (0-11) for indexing into the 12-note settings
+      const chromaticIndex = note.interval % 12;
+      return scaleDegreeSettings.value[chromaticIndex]?.show || false;
+    }
   )
 );
 1;
@@ -217,9 +221,10 @@ function getStringY(index: number) {
 }
 
 function getNoteColor(note: FretboardNote) {
-  if (note.scaleDegree === null) return "transparent"; // Not in scale
-
-  const setting = scaleDegreeSettings.value[note.scaleDegree - 1];
+  // Use chromatic interval (0-11) for indexing into the 12-note settings
+  const chromaticIndex = note.interval % 12;
+  const setting = scaleDegreeSettings.value[chromaticIndex];
+  
   if (!setting || !setting.show) return "transparent";
 
   if (!setting.color) {
@@ -231,9 +236,10 @@ function getNoteColor(note: FretboardNote) {
 }
 
 function getTextColor(note: FretboardNote) {
-  if (note.scaleDegree === null) return "transparent"; // Not in scale
-
-  const setting = scaleDegreeSettings.value[note.scaleDegree - 1];
+  // Use chromatic interval (0-11) for indexing into the 12-note settings
+  const chromaticIndex = note.interval % 12;
+  const setting = scaleDegreeSettings.value[chromaticIndex];
+  
   if (!setting || !setting.show) return "transparent";
 
   if (!setting.color) {

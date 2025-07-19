@@ -57,30 +57,38 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
   });
 
   const scaleDegreeSettings = computed(() => {
-    const scaleLength = selectedScale.value?.intervals?.length || 7;
+    const currentScale = selectedScale.value;
+    const scaleIntervals = currentScale?.intervals || [];
     
-    return Array.from({ length: scaleLength }, (_, index) => {
-      const intervalSemitones = selectedScale.value?.intervals?.[index] || 0;
+    // Always return 12 chromatic settings for all scales
+    return Array.from({ length: 12 }, (_, chromaticIndex) => {
+      const isInScale = scaleIntervals.includes(chromaticIndex);
       
-      // Map semitones to traditional music theory degrees
-      // 1 (root): 0 semitones -> bright + colored
-      if (intervalSemitones === 0) {
+      if (!isInScale) {
+        // Not in scale: hide the note
+        return { show: false, color: false, bright: false };
+      }
+      
+      // Note is in scale: apply styling based on harmonic function
+      // Use the actual chromatic intervals present in this scale to determine styling
+      
+      // Apply styling based on harmonic function (regardless of scale name)
+      if (chromaticIndex === 0) {
+        // Root note: always bright + colored
         return { show: true, color: true, bright: true };
-      }
-      // 3 or b3 (third): 3 or 4 semitones -> bright + colored
-      if ([3, 4].includes(intervalSemitones)) {
+      } else if (chromaticIndex === 3 || chromaticIndex === 4) {
+        // Minor 3rd or Major 3rd: bright + colored
         return { show: true, color: true, bright: true };
-      }
-      // 5 (fifth): 7 semitones -> bright + colored
-      if (intervalSemitones === 7) {
+      } else if (chromaticIndex === 7) {
+        // Perfect 5th: bright + colored
         return { show: true, color: true, bright: true };
+      } else if (chromaticIndex === 10 || chromaticIndex === 11) {
+        // Minor 7th or Major 7th: bright but not colored
+        return { show: true, color: false, bright: true };
+      } else {
+        // Other scale degrees: default in-scale styling
+        return { show: true, color: false, bright: false };
       }
-      // 7 or b7 (seventh): 10 or 11 semitones -> colored + dim
-      if ([10, 11].includes(intervalSemitones)) {
-        return { show: true, color: true, bright: false };
-      }
-      // Everything else (2, 4, 6, etc.): dim only
-      return { show: true, color: false, bright: false };
     });
   });
 
@@ -152,10 +160,10 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
     logDebugState(`Scale changed from ${oldScale} to ${newScale}`);
   });
 
-  // Use manual settings if they exist and match the scale length, otherwise use computed defaults
+  // Use manual settings if they exist (always 12 for new system), otherwise use computed defaults
   const finalScaleDegreeSettings = computed(() => {
-    const scaleLength = selectedScale.value?.intervals?.length || 7;
-    if (manualScaleDegreeSettings.value.length === scaleLength) {
+    // Always expect 12 chromatic settings
+    if (manualScaleDegreeSettings.value.length === 12) {
       return manualScaleDegreeSettings.value;
     }
     return scaleDegreeSettings.value;
