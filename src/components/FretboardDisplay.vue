@@ -182,6 +182,22 @@
         />
       </g>
     </svg>
+
+    <!-- Fretboard Tooltip -->
+    <TooltipContainer
+      :visible="tooltipState.visible"
+      :content="tooltipState.content"
+      :x="tooltipState.x"
+      :y="tooltipState.y"
+      :prevent-hover="true"
+    >
+      <template #content="{ data }">
+        <FretboardTooltipContent
+          v-if="data && typeof data === 'object' && 'noteName' in data"
+          :data="data as any"
+        />
+      </template>
+    </TooltipContainer>
   </div>
 </template>
 
@@ -191,8 +207,14 @@ import { useFretboardStore } from "@/stores/fretboard";
 import { storeToRefs } from "pinia";
 import type { FretboardNote } from "@/types";
 import TuningControls from "./TuningControls.vue";
+import TooltipContainer from "./TooltipContainer.vue";
+import FretboardTooltipContent from "./FretboardTooltipContent.vue";
 import { noteNames } from "@/utils/noteUtils";
 import { svgPaths } from "@/utils/svgPaths";
+import {
+  useFretboardTooltip,
+  createNoteTooltipContent,
+} from "@/composables/useFretboardTooltip";
 
 // Component gets isScaleDegree from store - no props needed
 
@@ -203,7 +225,6 @@ const {
   numFrets,
   fretboardNotes,
   isGuitar,
-  rootNote,
   selectedScaleName,
 } = storeToRefs(store);
 
@@ -292,6 +313,13 @@ const fretboardContainer = ref<HTMLDivElement | null>(null);
 const fretboardSvg = ref<SVGSVGElement | null>(null);
 const hoveredNoteId = ref<string | null>(null);
 
+// Initialize tooltip system
+const {
+  state: tooltipState,
+  updateContent,
+  initializeFretboard,
+} = useFretboardTooltip();
+
 const margin = { top: 48, right: 20, bottom: 40, left: 56 };
 const width = ref(1000);
 const height = ref(375);
@@ -310,6 +338,21 @@ const updateDimensions = () => {
 onMounted(() => {
   updateDimensions();
   window.addEventListener("resize", updateDimensions);
+
+  // Initialize tooltip system
+  if (fretboardContainer.value) {
+    initializeFretboard(fretboardContainer.value);
+  }
+});
+
+// Reinitialize tooltip system when instrument changes
+watch(() => store.numStrings, () => {
+  // Small delay to ensure DOM has updated
+  setTimeout(() => {
+    if (fretboardContainer.value) {
+      initializeFretboard(fretboardContainer.value);
+    }
+  }, 50);
 });
 
 onUnmounted(() => {
@@ -475,8 +518,34 @@ function getInteractiveWidth(fret: number) {
 function handleNoteHover(note: FretboardNote, isHovered: boolean) {
   if (isHovered) {
     hoveredNoteId.value = note.id;
+
+    // Show tooltip content
+    const chromaticIndex = note.interval % 12;
+    const setting = scaleDegreeSettings.value[chromaticIndex];
+
+    if (setting?.show) {
+      // Note is visible - show full tooltip
+      const tooltipContent = createNoteTooltipContent({
+        noteName: note.name,
+        scaleDegree: isScaleDegree.value ? note.interval : undefined,
+        fret: note.fret,
+        string: note.string,
+        instruction: "Click to change root note",
+      });
+      updateContent(tooltipContent);
+    } else {
+      // Note is not visible - show simple instruction
+      const tooltipContent = createNoteTooltipContent({
+        noteName: note.name,
+        fret: note.fret,
+        string: note.string,
+        instruction: "Click to change root note",
+      });
+      updateContent(tooltipContent);
+    }
   } else {
     hoveredNoteId.value = null;
+    // Don't hide tooltip immediately - let the area-based logic handle it
   }
 }
 </script>
@@ -603,8 +672,11 @@ g.note-circle:active {
 }
 
 /* Hover effects on visible notes only */
-.note-marker.hover-active {
-  transform: scale(1.05);
+.note-marker.hover-active circle:first-child {
+  /* transform: scale(0.958); */
+  stroke: var(--shade-60);
+  stroke-width: 2px;
+  transition: all 0.9s ease;
 }
 
 .note-marker {
