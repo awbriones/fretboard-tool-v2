@@ -219,7 +219,7 @@ import type { FretboardNote } from "@/types";
 import TuningControls from "./TuningControls.vue";
 import TooltipContainer from "./TooltipContainer.vue";
 import FretboardTooltipContent from "./FretboardTooltipContent.vue";
-import { noteNames } from "@/utils/noteUtils";
+import { noteNames, getScaleDegreeInScale } from "@/utils/noteUtils";
 import { svgPaths } from "@/utils/svgPaths";
 import {
   useFretboardTooltip,
@@ -237,6 +237,7 @@ const {
   fretboardNotes,
   isGuitar,
   selectedScaleName,
+  selectedScale,
 } = storeToRefs(store);
 
 // Track notes for delayed removal during exit animations
@@ -328,15 +329,28 @@ const hoveredNoteId = ref<string | null>(null);
 const {
   state: fretboardTooltipState,
   updateContent,
+  hideTooltip: hideFretboardTooltip,
   initializeFretboard,
 } = useFretboardTooltip();
 
 // Initialize simple tooltip system for tuning controls
 const {
   state: simpleTooltipState,
-  showTooltip,
-  hideTooltip,
+  showTooltip: showSimpleTooltip,
+  hideTooltip: hideSimpleTooltip,
 } = useSimpleTooltip();
+
+// Create coordinated tooltip functions that prevent overlap
+function showTooltip(content: string, event: MouseEvent) {
+  // Hide fretboard tooltip when showing simple tooltip
+  hideFretboardTooltip();
+  showSimpleTooltip(content, event);
+}
+
+function hideTooltip() {
+  hideSimpleTooltip();
+  // Also ensure fretboard tooltip can hide properly when we're done with tuning controls
+}
 
 const margin = { top: 48, right: 20, bottom: 40, left: 56 };
 const width = ref(1000);
@@ -353,13 +367,15 @@ const updateDimensions = () => {
   }
 };
 
+
 onMounted(() => {
   updateDimensions();
   window.addEventListener("resize", updateDimensions);
 
-  // Initialize tooltip system
-  if (fretboardContainer.value) {
-    initializeFretboard(fretboardContainer.value);
+  // Initialize tooltip system - disable area detection, rely on individual note events
+  if (fretboardSvg.value) {
+    initializeFretboard(fretboardSvg.value);
+    // Don't set custom bounds - let individual note hover events control everything
   }
 });
 
@@ -369,8 +385,9 @@ watch(
   () => {
     // Small delay to ensure DOM has updated
     setTimeout(() => {
-      if (fretboardContainer.value) {
-        initializeFretboard(fretboardContainer.value);
+      if (fretboardSvg.value) {
+        initializeFretboard(fretboardSvg.value);
+        // Don't set custom bounds - rely on individual note events
       }
     }, 50);
   }
@@ -540,24 +557,36 @@ function handleNoteHover(note: FretboardNote, isHovered: boolean) {
   if (isHovered) {
     hoveredNoteId.value = note.id;
 
-    // Show tooltip content
+    // Hide simple tooltip when showing fretboard tooltip
+    hideSimpleTooltip();
+
+    // Show tooltip content immediately
     const chromaticIndex = note.interval % 12;
     const setting = scaleDegreeSettings.value[chromaticIndex];
 
     if (setting?.show) {
-      // Note is visible - show full tooltip
+      // Note is visible - show full tooltip with proper scale degree
+      const properScaleDegree = isScaleDegree.value 
+        ? getScaleDegreeInScale(note.interval, selectedScale.value)
+        : undefined;
+        
       const tooltipContent = createNoteTooltipContent({
         noteName: note.name,
-        scaleDegree: isScaleDegree.value ? note.interval : undefined,
+        scaleDegree: properScaleDegree,
         fret: note.fret,
         string: note.string,
         instruction: "Click to change root note",
       });
       updateContent(tooltipContent);
     } else {
-      // Note is not visible - show simple instruction
+      // Note is not visible - show simple instruction with scale degree if enabled
+      const properScaleDegree = isScaleDegree.value 
+        ? getScaleDegreeInScale(note.interval, selectedScale.value)
+        : undefined;
+        
       const tooltipContent = createNoteTooltipContent({
         noteName: note.name,
+        scaleDegree: properScaleDegree,
         fret: note.fret,
         string: note.string,
         instruction: "Click to change root note",
@@ -566,7 +595,13 @@ function handleNoteHover(note: FretboardNote, isHovered: boolean) {
     }
   } else {
     hoveredNoteId.value = null;
-    // Don't hide tooltip immediately - let the area-based logic handle it
+    // Hide tooltip after a short delay to allow moving to adjacent notes
+    setTimeout(() => {
+      // Only hide if we're not hovering over another note
+      if (!hoveredNoteId.value) {
+        hideFretboardTooltip();
+      }
+    }, 150);
   }
 }
 </script>
@@ -686,10 +721,11 @@ g.note-circle:active {
   cursor: pointer;
 }
 
+/* Debug interactive areas: uncomment to visualize
 .interactive-area {
-  /* Debug: uncomment to see interactive areas */
-  /* fill: rgba(255, 0, 0, 0.1) !important; */
+  fill: rgba(255, 0, 0, 0.1) !important;
 }
+*/
 
 /* Hover effects on visible notes only */
 .note-marker.hover-active circle:first-child {

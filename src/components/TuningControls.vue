@@ -102,10 +102,14 @@ select.tuning-select {
 
 select.tuning-select:hover,
 select.tuning-select:focus-visible {
-  background-color: var(--shade-30);
+  background-color: var(--shade-10);
   cursor: pointer;
-  border: 2px solid var(--light-12);
   outline: none;
   /* Change cursor to pointer on hover */
+}
+select.tuning-select:focus-visible {
+  outline: 2px solid var(--light-24);
+  outline-offset: 2px;
+  /* Add focus ring for accessibility */
 }
 </style>

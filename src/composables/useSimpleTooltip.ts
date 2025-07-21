@@ -30,7 +30,7 @@ export function useSimpleTooltip() {
     hideTimeout = window.setTimeout(() => {
       state.visible = false;
       state.content = '';
-    }, 100); // Small delay to prevent flicker
+    }, 50); // Reduced delay for snappier behavior
   }
 
   function clearTimeout() {

@@ -15,7 +15,9 @@
           }"
           :style="setting.show ? { backgroundColor: getNoteColor(index) } : {}"
           @click="toggleShow(index)"
-          @mouseenter="props.showTooltip(setting.show ? 'Hide note' : 'Show note', $event)"
+          @mouseenter="
+            props.showTooltip(setting.show ? 'Hide note' : 'Show note', $event)
+          "
           @mouseleave="props.hideTooltip"
         >
           <svg :viewBox="getButtonSvg(index)?.viewBox" width="40" height="40">
@@ -46,7 +48,12 @@
             fill: getColorButtonColor(index),
           }"
           @click="toggleColor(index)"
-          @mouseenter="props.showTooltip(setting.color ? 'Set color off' : 'Set color on', $event)"
+          @mouseenter="
+            props.showTooltip(
+              setting.color ? 'Set color off' : 'Set color on',
+              $event
+            )
+          "
           @mouseleave="props.hideTooltip"
         >
           <svg :viewBox="getSvgPath('colors')?.viewBox">
@@ -73,7 +80,12 @@
           }"
           :style="{ fill: getDimColor(index) }"
           @click="toggleBright(index)"
-          @mouseenter="props.showTooltip(setting.bright ? 'Set bright off' : 'Set bright on', $event)"
+          @mouseenter="
+            props.showTooltip(
+              setting.bright ? 'Set bright off' : 'Set bright on',
+              $event
+            )
+          "
           @mouseleave="props.hideTooltip"
         >
           <svg :viewBox="getSvgPath('brightness')?.viewBox">
@@ -231,7 +243,6 @@ onMounted(() => {
 .highlighting-settings {
   background: var(--shade-20);
   border-radius: 8px;
-  padding: 24px;
 }
 
 .controls-grid {
@@ -332,6 +343,5 @@ button {
   &.dim-button--hidden {
     visibility: hidden;
   }
-
 }
 </style>

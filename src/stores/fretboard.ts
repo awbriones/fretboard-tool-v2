@@ -25,6 +25,8 @@ interface FretboardState {
   switchToCustomMode: () => void;
   isGuitar: Ref<boolean>; // Add the 'isGuitar' property
   setInstrument: (guitar: boolean) => void; // Add the 'setInstrument' property
+  accidentalDisplayMode: Ref<AccidentalDisplayMode>;
+  setAccidentalDisplayMode: (mode: AccidentalDisplayMode) => void;
 }
 
 interface ScaleDegreeSetting {
@@ -32,6 +34,8 @@ interface ScaleDegreeSetting {
   color: boolean;
   bright: boolean;
 }
+
+export type AccidentalDisplayMode = 'both' | 'sharps' | 'flats' | 'logical';
 
 export const useFretboardStore = defineStore("fretboard", (): FretboardState => {
   const { scales } = useScales();
@@ -41,6 +45,7 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
   const numFrets = ref(15);
   const numStrings = ref(6);
   const isScaleDegree = ref(true);
+  const accidentalDisplayMode = ref<AccidentalDisplayMode>('logical');
 
   const selectedScale = computed(() => {
     const scale = scales.value[selectedScaleName.value];
@@ -163,6 +168,10 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
     isScaleDegree.value = value;
   }
 
+  function setAccidentalDisplayMode(mode: AccidentalDisplayMode) {
+    accidentalDisplayMode.value = mode;
+  }
+
   const manualScaleDegreeSettings = ref<ScaleDegreeSetting[]>([]);
 
   function setScaleDegreeSettings(settings: ScaleDegreeSetting[]) {
@@ -279,6 +288,8 @@ export const useFretboardStore = defineStore("fretboard", (): FretboardState => 
     switchToCustomMode,
     isGuitar,
     setInstrument,
+    accidentalDisplayMode,
+    setAccidentalDisplayMode,
   };
 });
 

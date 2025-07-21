@@ -26,7 +26,8 @@ export function useFretboardTooltip() {
   });
 
   let hideTimeout: number | null = null;
-  let fretboardElement: HTMLElement | null = null;
+  let fretboardElement: Element | null = null;
+  let customBounds: { left: number; right: number; top: number; bottom: number } | null = null;
 
   // Track mouse position globally
   function updateMousePosition(event: MouseEvent) {
@@ -40,6 +41,16 @@ export function useFretboardTooltip() {
     
     const rect = fretboardElement.getBoundingClientRect();
     const { clientX: x, clientY: y } = event;
+    
+    // Use the provided bounds if available, otherwise fall back to element bounds
+    if (customBounds) {
+      return (
+        x >= customBounds.left &&
+        x <= customBounds.right &&
+        y >= customBounds.top &&
+        y <= customBounds.bottom
+      );
+    }
     
     return (
       x >= rect.left &&
@@ -76,7 +87,7 @@ export function useFretboardTooltip() {
   }
 
   // Schedule hide with delay (for smooth transitions between notes)
-  function scheduleHide(delay = 200) {
+  function scheduleHide(delay = 300) {
     clearHideTimeout();
     hideTimeout = window.setTimeout(() => {
       if (!state.isInFretboardArea) {
@@ -102,8 +113,13 @@ export function useFretboardTooltip() {
     }
   }
 
+  // Set custom bounds for area detection
+  function setCustomBounds(bounds: { left: number; right: number; top: number; bottom: number }) {
+    customBounds = bounds;
+  }
+
   // Initialize fretboard area tracking
-  function initializeFretboard(element: HTMLElement) {
+  function initializeFretboard(element: Element) {
     fretboardElement = element;
 
     // Add area detection listeners
@@ -148,6 +164,7 @@ export function useFretboardTooltip() {
     updateContent,
     scheduleHide,
     initializeFretboard,
+    setCustomBounds,
   };
 }
 

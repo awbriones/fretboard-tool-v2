@@ -146,7 +146,6 @@ function updateScale() {
 </script>
 
 <style scoped lang="scss">
-
 .scale-select {
   /* Scale Selector */
   width: 88px;
@@ -171,7 +170,6 @@ function updateScale() {
 
   &:hover,
   &:focus-visible {
-    background-color: var(--shade-20);
     outline: none;
   }
 }

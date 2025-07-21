@@ -25,7 +25,7 @@
       <div class="markers-toggle">
         <span class="markers-label">Markers</span>
         <div class="toggle">
-          <ToggleSwitch
+          <SmartToggleSwitch
             v-model="isScaleDegree"
             left-label="Degrees"
             right-label="Notes"
@@ -61,7 +61,7 @@ import { computed } from "vue";
 import { useFretboardStore } from "@/stores/fretboard";
 import KeySelector from "./KeySelector.vue";
 import ScaleSelector from "./ScaleSelector.vue";
-import ToggleSwitch from "./ToggleSwitch.vue";
+import SmartToggleSwitch from "./SmartToggleSwitch.vue";
 import HighlightSettings from "./HighlightSettings.vue";
 import TooltipContainer from "./TooltipContainer.vue";
 import { useSimpleTooltip } from "@/composables/useSimpleTooltip";
