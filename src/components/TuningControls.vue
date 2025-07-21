@@ -6,6 +6,8 @@
       class="tuning-select"
       :value="string"
       @change="(event) => changeTuning(numStrings - 1 - index, (event.target as HTMLSelectElement).value)"
+      @mouseenter="props.showTooltip('Change string tuning', $event)"
+      @mouseleave="props.hideTooltip"
     >
       <option v-for="note in noteNames" :key="note" :value="note">
         {{ note }}
@@ -23,6 +25,8 @@ const props = defineProps<{
   numStrings: number;
   noteNames: string[];
   isGuitar: boolean;
+  showTooltip: (content: string, event: MouseEvent) => void;
+  hideTooltip: () => void;
 }>();
 
 const emit = defineEmits<{
@@ -32,6 +36,8 @@ const emit = defineEmits<{
 const localTuning = ref([...props.tuning]);
 
 const reversedLocalTuning = computed(() => [...localTuning.value].reverse());
+
+// Tooltip functions accessed directly from props to maintain reactivity
 
 watch(
   () => props.tuning,

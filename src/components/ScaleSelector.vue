@@ -1,8 +1,12 @@
 <template>
   <div class="scale-selector">
-    <select v-model="localSelectedScale" @change="updateScale" class="custom-select">
+    <select
+      v-model="localSelectedScale"
+      @change="updateScale"
+      class="scale-select"
+    >
       <template v-for="item in organizedScales" :key="item.key">
-        <option v-if="item.isSeparator" disabled="">─────</option>
+        <option v-if="item.isSeparator" disabled>─────</option>
         <option v-else :value="item.value">{{ item.name }}</option>
       </template>
     </select>
@@ -25,40 +29,110 @@ const localSelectedScale = ref(selectedScaleName.value);
 const organizedScales = computed(() => {
   return [
     // Chromatic
-    { key: 'chromatic', value: 'chromatic', name: scales.value.chromatic.name, isSeparator: false },
-    
+    {
+      key: "chromatic",
+      value: "chromatic",
+      name: scales.value.chromatic.name,
+      isSeparator: false,
+    },
+
     // Separator
-    { key: 'sep1', isSeparator: true },
-    
+    { key: "sep1", isSeparator: true },
+
     // Basic Scales
-    { key: 'major', value: 'major', name: scales.value.major.name, isSeparator: false },
-    { key: 'minor', value: 'minor', name: scales.value.minor.name, isSeparator: false },
-    
+    {
+      key: "major",
+      value: "major",
+      name: scales.value.major.name,
+      isSeparator: false,
+    },
+    {
+      key: "minor",
+      value: "minor",
+      name: scales.value.minor.name,
+      isSeparator: false,
+    },
+
     // Separator
-    { key: 'sep2', isSeparator: true },
-    
+    { key: "sep2", isSeparator: true },
+
     // Modal Scales
-    { key: 'ionian', value: 'ionian', name: scales.value.ionian.name, isSeparator: false },
-    { key: 'dorian', value: 'dorian', name: scales.value.dorian.name, isSeparator: false },
-    { key: 'phrygian', value: 'phrygian', name: scales.value.phrygian.name, isSeparator: false },
-    { key: 'lydian', value: 'lydian', name: scales.value.lydian.name, isSeparator: false },
-    { key: 'mixolydian', value: 'mixolydian', name: scales.value.mixolydian.name, isSeparator: false },
-    { key: 'aeolian', value: 'aeolian', name: scales.value.aeolian.name, isSeparator: false },
-    { key: 'locrian', value: 'locrian', name: scales.value.locrian.name, isSeparator: false },
-    
+    {
+      key: "ionian",
+      value: "ionian",
+      name: scales.value.ionian.name,
+      isSeparator: false,
+    },
+    {
+      key: "dorian",
+      value: "dorian",
+      name: scales.value.dorian.name,
+      isSeparator: false,
+    },
+    {
+      key: "phrygian",
+      value: "phrygian",
+      name: scales.value.phrygian.name,
+      isSeparator: false,
+    },
+    {
+      key: "lydian",
+      value: "lydian",
+      name: scales.value.lydian.name,
+      isSeparator: false,
+    },
+    {
+      key: "mixolydian",
+      value: "mixolydian",
+      name: scales.value.mixolydian.name,
+      isSeparator: false,
+    },
+    {
+      key: "aeolian",
+      value: "aeolian",
+      name: scales.value.aeolian.name,
+      isSeparator: false,
+    },
+    {
+      key: "locrian",
+      value: "locrian",
+      name: scales.value.locrian.name,
+      isSeparator: false,
+    },
+
     // Separator
-    { key: 'sep3', isSeparator: true },
-    
+    { key: "sep3", isSeparator: true },
+
     // Pentatonic & Blues
-    { key: 'major-pentatonic', value: 'major pentatonic', name: scales.value['major pentatonic'].name, isSeparator: false },
-    { key: 'minor-pentatonic', value: 'minor pentatonic', name: scales.value['minor pentatonic'].name, isSeparator: false },
-    { key: 'blues', value: 'blues', name: scales.value.blues.name, isSeparator: false },
-    
-    // Separator  
-    { key: 'sep4', isSeparator: true },
-    
+    {
+      key: "major-pentatonic",
+      value: "major pentatonic",
+      name: scales.value["major pentatonic"].name,
+      isSeparator: false,
+    },
+    {
+      key: "minor-pentatonic",
+      value: "minor pentatonic",
+      name: scales.value["minor pentatonic"].name,
+      isSeparator: false,
+    },
+    {
+      key: "blues",
+      value: "blues",
+      name: scales.value.blues.name,
+      isSeparator: false,
+    },
+
+    // Separator
+    { key: "sep4", isSeparator: true },
+
     // Custom
-    { key: 'custom', value: 'custom', name: scales.value.custom.name, isSeparator: false }
+    {
+      key: "custom",
+      value: "custom",
+      name: scales.value.custom.name,
+      isSeparator: false,
+    },
   ];
 });
 
@@ -71,7 +145,34 @@ function updateScale() {
 }
 </script>
 
-<style scoped>
-.scale-selector {
+<style scoped lang="scss">
+
+.scale-select {
+  /* Scale Selector */
+  width: 88px;
+  height: 44px;
+
+  background: var(--shade-10);
+  border: none;
+  border-radius: 32px;
+
+  font-weight: 400;
+  font-size: 14px;
+  text-align: center;
+
+  color: var(--shade-70);
+
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+
+  cursor: pointer;
+  transition: background-color 0.2s ease-out;
+
+  &:hover,
+  &:focus-visible {
+    background-color: var(--shade-20);
+    outline: none;
+  }
 }
 </style>

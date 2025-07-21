@@ -4,8 +4,6 @@
       <div class="header-content">
         <h1 class="main-title">Fretboard Tool <span class="version">V2</span></h1>
         <div class="rightside-content">
-          <KeySelector />
-          <ScaleSelector />
           <InstrumentSelector />
         </div>
       </div>
@@ -18,23 +16,15 @@
         </div>
       </div>
       <div class="bottom-settings">
-        <!-- <ToggleSwitch
-          :model-value="isScaleDegree"
-          @update:model-value="toggleNoteDisplay"
-          left-label="Note"
-          right-label="Scale Degree"
-        /> -->
-        <HighlightSettings />
+        <FretboardSettings />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import KeySelector from "@/components/KeySelector.vue";
-import ScaleSelector from "@/components/ScaleSelector.vue";
 import FretboardDisplay from "@/components/FretboardDisplay.vue";
-import HighlightSettings from "@/components/HighlightSettings.vue";
+import FretboardSettings from "@/components/FretboardSettings.vue";
 import InstrumentSelector from "@/components/InstrumentSelector.vue";
 import { onMounted } from "vue";
 import { useFretboardStore } from "@/stores/fretboard";
@@ -100,5 +90,12 @@ onMounted(() => {
   max-width: 1556px;
   margin: 20px auto;
   padding: 0 20px;
+}
+
+.bottom-settings {
+  margin-top: 0;
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 </style>

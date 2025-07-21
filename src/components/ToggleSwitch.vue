@@ -1,22 +1,34 @@
 <template>
   <div
     class="toggle-switch"
-    :class="{ left: modelValue, right: !modelValue }"
+    :class="{ active: modelValue }"
     tabindex="0"
     @keydown.enter.prevent="toggleValue"
     @keydown.space.prevent="toggleValue"
+    @click="toggleValue"
   >
-    <label :for="inputId" class="toggle-switch-label">
-      <span class="toggle-switch-text left">{{ leftLabel }}</span>
-      <input
-        type="checkbox"
-        :id="inputId"
-        :checked="modelValue"
-        @input="$emit('update:modelValue', $event.target.checked)"
-      />
-      <span class="toggle-switch-slider"></span>
-      <span class="toggle-switch-text right">{{ rightLabel }}</span>
-    </label>
+    <!-- Animated background slider -->
+    <div
+      class="toggle-background-slider"
+      :class="{ 'slide-right': !modelValue }"
+    ></div>
+
+    <!-- Toggle options -->
+    <div class="toggle-option left" :class="{ active: modelValue }">
+      {{ leftLabel }}
+    </div>
+    <div class="toggle-option right" :class="{ active: !modelValue }">
+      {{ rightLabel }}
+    </div>
+
+    <!-- Hidden input for form compatibility -->
+    <input
+      type="checkbox"
+      :id="inputId"
+      :checked="modelValue"
+      @input="$emit('update:modelValue', $event.target.checked)"
+      style="display: none"
+    />
   </div>
 </template>
 
@@ -30,7 +42,9 @@ export default {
     modelValue: Boolean,
   },
   setup() {
-    const inputId = ref(`toggle-${Math.random().toString(36).substr(2, 9)}`);
+    const inputId = ref(
+      `toggle-${Math.random().toString(36).substring(2, 11)}`
+    );
     return { inputId };
   },
   methods: {
@@ -41,81 +55,88 @@ export default {
 };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .toggle-switch {
+  /* Toggle */
   position: relative;
   display: flex;
-  height: 40px;
-  align-items: center;
-  gap: 12px;
-}
-
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-  display: none;
-}
-
-.toggle-switch .toggle-switch-label {
-  display: flex;
-  align-items: center;
+  flex-direction: row;
   justify-content: center;
-  height: 100%;
-  font-size: 18px;
-  gap: 12px;
-  color: var(--shade-50);
-  transition: color 0.24s ease-out;
-  background: transparent;
-  padding: 0 12px;
-  transition: background-color, ease-out, 0.12s;
-  border-radius: 20px;
-  user-select: none;
-}
+  align-items: center;
+  padding: 0px 14px;
+  gap: 16px;
 
-.toggle-switch .toggle-switch-label:hover {
-  background: var(--shade-20);
+  height: 48px;
+
+  background: var(--shade-10);
+  border-radius: 48px;
   cursor: pointer;
+  user-select: none;
+
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+
+  &:focus-visible {
+    outline: 2px solid var(--light-24);
+    outline-offset: 2px;
+  }
 }
 
-.toggle-switch:focus-visible {
-  border-radius: 20px;
-  background: var(--shade-20);
-  outline: 2px solid var(--light-24);
-}
-
-.toggle-switch.right .toggle-switch-text.right,
-.toggle-switch.left .toggle-switch-text.left {
-  color: var(--shade-70);
-}
-
-.toggle-switch .toggle-switch-slider {
-  position: relative;
-  width: 28px;
-  height: 16px;
-  background-color: var(--slider-background-color);
-  border-radius: 20px;
-  transition: background-color 0.24s ease-out;
-}
-
-.toggle-switch .toggle-switch-slider:before {
+.toggle-background-slider {
+  /* Active background */
   position: absolute;
-  content: "";
-  height: 12px;
-  width: 12px;
-  left: 2px;
-  bottom: 2px;
-  background-color: var(--shade-70);
-  border-radius: 50%;
-  transition: transform 0.24s ease-out;
-  transform: translateX(100%);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 8px;
+
+  width: 54px;
+  height: 36px;
+
+  background: var(--shade-30);
+  border-radius: 32px;
+
+  transition: all 0.3s ease-out;
+  z-index: 1;
+
+  /* Default position for left (degrees) */
+  transform: translateX(-27px);
+  width: 71px;
+
+  &.slide-right {
+    /* Position for right (notes) */
+    transform: translateX(34px);
+    width: 54px;
+  }
 }
 
-.toggle-switch input:checked ~ .toggle-switch-slider:before {
-  transform: translateX(0%);
-}
+.toggle-option {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-.toggle-switch input:checked ~ .toggle-switch-slider {
-  background-color: var(--slider-checked-background-color);
+  height: 36px;
+
+  font-size: 14px;
+
+  color: var(--shade-50);
+  transition: color 0.3s ease-out;
+
+  &.active {
+    color: var(--shade-70);
+    font-weight: 500;
+  }
+
+  &.left {
+    order: 0;
+  }
+
+  &.right {
+    order: 1;
+  }
 }
 </style>

@@ -6,6 +6,8 @@
       :num-strings="store.numStrings"
       :note-names="noteNames"
       :is-guitar="isGuitar"
+      :show-tooltip="showTooltip"
+      :hide-tooltip="hideTooltip"
       @tuning-changed="handleTuningChanged"
     />
 
@@ -185,10 +187,10 @@
 
     <!-- Fretboard Tooltip -->
     <TooltipContainer
-      :visible="tooltipState.visible"
-      :content="tooltipState.content"
-      :x="tooltipState.x"
-      :y="tooltipState.y"
+      :visible="fretboardTooltipState.visible"
+      :content="fretboardTooltipState.content"
+      :x="fretboardTooltipState.x"
+      :y="fretboardTooltipState.y"
       :prevent-hover="true"
     >
       <template #content="{ data }">
@@ -198,6 +200,14 @@
         />
       </template>
     </TooltipContainer>
+
+    <!-- Simple Tooltip for Tuning Controls -->
+    <TooltipContainer
+      :visible="simpleTooltipState.visible"
+      :content="simpleTooltipState.content"
+      :x="simpleTooltipState.x"
+      :y="simpleTooltipState.y"
+    />
   </div>
 </template>
 
@@ -215,6 +225,7 @@ import {
   useFretboardTooltip,
   createNoteTooltipContent,
 } from "@/composables/useFretboardTooltip";
+import { useSimpleTooltip } from "@/composables/useSimpleTooltip";
 
 // Component gets isScaleDegree from store - no props needed
 
@@ -313,12 +324,19 @@ const fretboardContainer = ref<HTMLDivElement | null>(null);
 const fretboardSvg = ref<SVGSVGElement | null>(null);
 const hoveredNoteId = ref<string | null>(null);
 
-// Initialize tooltip system
+// Initialize fretboard tooltip system
 const {
-  state: tooltipState,
+  state: fretboardTooltipState,
   updateContent,
   initializeFretboard,
 } = useFretboardTooltip();
+
+// Initialize simple tooltip system for tuning controls
+const {
+  state: simpleTooltipState,
+  showTooltip,
+  hideTooltip,
+} = useSimpleTooltip();
 
 const margin = { top: 48, right: 20, bottom: 40, left: 56 };
 const width = ref(1000);
@@ -346,14 +364,17 @@ onMounted(() => {
 });
 
 // Reinitialize tooltip system when instrument changes
-watch(() => store.numStrings, () => {
-  // Small delay to ensure DOM has updated
-  setTimeout(() => {
-    if (fretboardContainer.value) {
-      initializeFretboard(fretboardContainer.value);
-    }
-  }, 50);
-});
+watch(
+  () => store.numStrings,
+  () => {
+    // Small delay to ensure DOM has updated
+    setTimeout(() => {
+      if (fretboardContainer.value) {
+        initializeFretboard(fretboardContainer.value);
+      }
+    }, 50);
+  }
+);
 
 onUnmounted(() => {
   window.removeEventListener("resize", updateDimensions);
@@ -552,11 +573,10 @@ function handleNoteHover(note: FretboardNote, isHovered: boolean) {
 
 <style scoped>
 .fretboard {
-  background: var(--shade-20);
-  border-radius: 24px;
+  /* Only component-specific styles here - inherits global styles */
   min-width: 900px;
   width: 100%;
-  height: 340px;
+  height: 360px;
   padding-bottom: 12px;
   padding-top: 4px;
 }

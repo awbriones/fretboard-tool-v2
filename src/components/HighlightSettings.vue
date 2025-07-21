@@ -1,5 +1,5 @@
 <template>
-  <div class="highlighting-settings settings-container" :key="updateKey">
+  <div class="highlighting-settings" :key="updateKey">
     <div class="controls-grid">
       <div class="control-row show-row">
         <span class="row-label">Show</span>
@@ -15,6 +15,8 @@
           }"
           :style="setting.show ? { backgroundColor: getNoteColor(index) } : {}"
           @click="toggleShow(index)"
+          @mouseenter="props.showTooltip(setting.show ? 'Hide note' : 'Show note', $event)"
+          @mouseleave="props.hideTooltip"
         >
           <svg :viewBox="getButtonSvg(index)?.viewBox" width="40" height="40">
             <path
@@ -44,6 +46,8 @@
             fill: getColorButtonColor(index),
           }"
           @click="toggleColor(index)"
+          @mouseenter="props.showTooltip(setting.color ? 'Set color off' : 'Set color on', $event)"
+          @mouseleave="props.hideTooltip"
         >
           <svg :viewBox="getSvgPath('colors')?.viewBox">
             <path
@@ -69,6 +73,8 @@
           }"
           :style="{ fill: getDimColor(index) }"
           @click="toggleBright(index)"
+          @mouseenter="props.showTooltip(setting.bright ? 'Set bright off' : 'Set bright on', $event)"
+          @mouseleave="props.hideTooltip"
         >
           <svg :viewBox="getSvgPath('brightness')?.viewBox">
             <path
@@ -80,35 +86,28 @@
           </svg>
         </button>
       </div>
-
-      <div class="control-row labels-row">
-        <span class="row-label">Labels</span>
-        <div class="labels-buttons">
-          <button
-            v-for="option in ['Scale Degrees', 'Note Names']"
-            :key="option"
-            class="label-option"
-            :class="{ active: isScaleDegree === (option === 'Scale Degrees') }"
-            @click="setLabel(option)"
-          >
-            {{ option }}
-          </button>
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from "vue";
+import { computed, ref, watch, onMounted, defineProps } from "vue";
 import { useFretboardStore } from "@/stores/fretboard";
 import { storeToRefs } from "pinia";
 import { getSvgPath } from "@/utils/svgPaths";
 import { noteNames } from "@/utils/noteUtils";
 
+// Props for tooltip functions
+const props = defineProps<{
+  showTooltip: (content: string, event: MouseEvent) => void;
+  hideTooltip: () => void;
+}>();
+
 const store = useFretboardStore();
 const { scaleDegreeSettings, rootNote, isScaleDegree } = storeToRefs(store);
 const updateKey = ref(0);
+
+// Use tooltip functions from props (access directly to maintain reactivity)
 
 function getButtonSvg(index: number) {
   // Always show the note/degree label, never the hidden icon
@@ -142,7 +141,7 @@ function getNoteColor(index: number) {
 
 function getTextColor(index: number) {
   const setting = scaleDegreeSettings.value[index];
-  
+
   // Show buttons OFF: shade-40
   if (!setting.show) return "var(--shade-40)";
 
@@ -174,7 +173,7 @@ function getDimColor(index: number) {
   }
   // When colors are ON: active dim buttons shade-60, inactive dim buttons shade-40
   return setting.bright ? "var(--shade-60)" : "var(--shade-40)";
-  
+
   // Alternative colored approach (may want to return to this):
   // const colorIndex = index % 12;
   // return setting.bright
@@ -209,10 +208,6 @@ function toggleBright(index: number) {
     bright: !currentSettings[index].bright,
   };
   store.setScaleDegreeSettings(currentSettings);
-}
-
-function setLabel(option: string) {
-  store.setIsScaleDegree(option === "Scale Degrees");
 }
 
 watch(
@@ -288,22 +283,10 @@ button {
     height: 100%;
   }
 
-  // New state-based classes for show buttons
-  &.show-button--visible {
-    // Styles for visible/shown notes - default styling
-  }
-
+  // State-based classes for show buttons
   &.show-button--hidden {
-    // Styles for hidden notes - you can customize opacity, background, etc.
+    // Styles for hidden notes
     background-color: var(--shade-10);
-  }
-
-  &.show-button--colored {
-    // Additional styles when the note has color enabled
-  }
-
-  &.show-button--bright {
-    // Additional styles when the note has brightness enabled
   }
 }
 
@@ -336,8 +319,8 @@ button {
   &.color-button--hidden {
     visibility: hidden;
   }
-  
-  // New state-based classes for dim buttons  
+
+  // New state-based classes for dim buttons
   &.dim-button--bright {
     // Styles when note is bright
     background-color: var(--shade-30) !important;
@@ -350,40 +333,5 @@ button {
     visibility: hidden;
   }
 
-  &:hover {
-    // hover styles
-  }
-}
-
-.labels-row {
-  margin-top: 16px;
-}
-
-.labels-buttons {
-  display: flex;
-  gap: 8px;
-  flex-grow: 1;
-}
-
-.label-option {
-  background-color: var(--shade-20);
-  color: var(--shade-60);
-  padding: 8px 16px;
-  border-radius: 32px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  white-space: nowrap;
-  transition: all 0.3s ease;
-  width: inherit;
-
-  &:hover {
-    background-color: var(--shade-30);
-  }
-
-  &.active {
-    background-color: var(--shade-30);
-    color: var(--shade-70);
-  }
 }
 </style>
