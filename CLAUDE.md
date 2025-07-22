@@ -35,17 +35,26 @@ This is a Vue 3 fretboard visualization tool built with TypeScript, Pinia for st
 ### Current Features
 - Interactive fretboard display with configurable tuning and string count
 - Scale visualization (major, minor, pentatonic, blues, modal scales)
-- Toggle between note names and scale degrees
+- Smart toggle components (degrees/notes, guitar/bass) with programmatic sizing
+- Piano-style key selector with full keyboard accessibility and dynamic accidental display
 - Customizable highlighting for each scale degree (show/hide, color, brightness)
-- Key/root note selection and scale selection
-- SVG-based rendering with custom path data for note/degree labels
+- Smooth note-anchored tooltips with proper musical notation (♭2nd, ♯4th, ♭7th)
+- Element-positioned tooltips with viewport collision detection
+- SVG-based rendering with hybrid text+symbol note labels
+- Highlighted fret numbers for marker positions (3, 5, 7, 9, 12, 15)
+
+### Recent Major Improvements (Latest Session)
+- **Tooltip System Overhaul**: Replaced mouse-following tooltips with smooth note-anchored positioning
+- **Piano Key Selector**: Custom piano-style interface replacing dropdown with accessibility features  
+- **Smart Toggle Components**: Programmatically sized toggles that adapt to text content
+- **Element Tooltips**: Fast, reactive tooltips for UI controls with state change updates
+- **Musical Notation**: Proper scale degrees (♭2nd, ♯4th) and hybrid text+symbol rendering
 
 ### Known Issues & Limitations
-- Manual music theory calculations that could be error-prone
-- Limited extensibility for new scales/modes
-- Notes are only interactive when visible (no empty fret interaction)
+- Manual music theory calculations (Tonal.js integration in progress)
+- Limited extensibility for new scales/modes  
 - Fixed fret count (15 frets)
-- Some state management bugs from previous development
+- Notes only interactive when visible (no empty fret interaction)
 
 ### Key Architecture Components
 
@@ -78,11 +87,20 @@ This is a Vue 3 fretboard visualization tool built with TypeScript, Pinia for st
 - Bottom settings panel
 
 **Key Components:**
-- `FretboardDisplay.vue` - SVG-based fretboard visualization
-- `KeySelector.vue` - Root note selection
+- `FretboardDisplay.vue` - SVG-based fretboard visualization with note-anchored tooltips
+- `KeySelector.vue` - Piano-style root note selection with accessibility
 - `ScaleSelector.vue` - Scale pattern selection
-- `InstrumentSelector.vue` - Guitar/bass switching
-- `HighlightSettings.vue` - Scale degree display controls
+- `InstrumentSelector.vue` - Smart toggle for guitar/bass switching
+- `HighlightSettings.vue` - Scale degree display controls with element tooltips
+- `SmartToggleSwitch.vue` - Programmatically-sized toggle component
+- `ElementTooltip.vue` - Element-positioned tooltips with collision detection
+- `NoteLabel.vue` - Hybrid text+symbol note rendering component
+- `TooltipContainer.vue` - Smooth-transitioning tooltip container
+
+**New Composables:**
+- `useFretboardTooltip.ts` - Note-anchored tooltip system with SVG coordinate conversion
+- `useElementTooltip.ts` - Element-positioned tooltips with smart timing and reactivity
+- `useSimpleTooltip.ts` - Basic mouse-following tooltip system
 
 ### Development Patterns
 
