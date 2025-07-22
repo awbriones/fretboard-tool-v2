@@ -6,8 +6,6 @@
       :num-strings="store.numStrings"
       :note-names="noteNames"
       :is-guitar="isGuitar"
-      :show-tooltip="showTooltip"
-      :hide-tooltip="hideTooltip"
       @tuning-changed="handleTuningChanged"
     />
 
@@ -50,7 +48,12 @@
           :x="(position + fretPositions[index]) / 2"
           :y="margin.top / 2"
           alignment-baseline="middle"
-          class="fret-number-label"
+          :class="{
+            'fret-number-label': true,
+            'fret-number-label--highlighted': [3, 5, 7, 9, 12, 15].includes(
+              index + 1
+            ),
+          }"
         >
           {{ index + 1 }}
         </text>
@@ -328,29 +331,16 @@ const hoveredNoteId = ref<string | null>(null);
 // Initialize fretboard tooltip system
 const {
   state: fretboardTooltipState,
-  updateContent,
+  showNoteTooltip,
   hideTooltip: hideFretboardTooltip,
   initializeFretboard,
 } = useFretboardTooltip();
 
-// Initialize simple tooltip system for tuning controls
-const {
-  state: simpleTooltipState,
-  showTooltip: showSimpleTooltip,
-  hideTooltip: hideSimpleTooltip,
-} = useSimpleTooltip();
+// Initialize simple tooltip system for any remaining simple tooltips
+const { state: simpleTooltipState } = useSimpleTooltip();
 
-// Create coordinated tooltip functions that prevent overlap
-function showTooltip(content: string, event: MouseEvent) {
-  // Hide fretboard tooltip when showing simple tooltip
-  hideFretboardTooltip();
-  showSimpleTooltip(content, event);
-}
-
-function hideTooltip() {
-  hideSimpleTooltip();
-  // Also ensure fretboard tooltip can hide properly when we're done with tuning controls
-}
+// Simple tooltip functions are no longer needed for TuningControls
+// as it now uses ElementTooltip internally
 
 const margin = { top: 48, right: 20, bottom: 40, left: 56 };
 const width = ref(1000);
@@ -367,14 +357,13 @@ const updateDimensions = () => {
   }
 };
 
-
 onMounted(() => {
   updateDimensions();
   window.addEventListener("resize", updateDimensions);
 
   // Initialize tooltip system - disable area detection, rely on individual note events
   if (fretboardSvg.value) {
-    initializeFretboard(fretboardSvg.value);
+    initializeFretboard();
     // Don't set custom bounds - let individual note hover events control everything
   }
 });
@@ -386,7 +375,7 @@ watch(
     // Small delay to ensure DOM has updated
     setTimeout(() => {
       if (fretboardSvg.value) {
-        initializeFretboard(fretboardSvg.value);
+        initializeFretboard();
         // Don't set custom bounds - rely on individual note events
       }
     }, 50);
@@ -557,42 +546,33 @@ function handleNoteHover(note: FretboardNote, isHovered: boolean) {
   if (isHovered) {
     hoveredNoteId.value = note.id;
 
-    // Hide simple tooltip when showing fretboard tooltip
-    hideSimpleTooltip();
+    if (!fretboardSvg.value) return;
 
-    // Show tooltip content immediately
-    const chromaticIndex = note.interval % 12;
-    const setting = scaleDegreeSettings.value[chromaticIndex];
+    // Calculate note center coordinates
+    const noteCenterX = getX(note.fret);
+    const noteCenterY = getY(note.string);
 
-    if (setting?.show) {
-      // Note is visible - show full tooltip with proper scale degree
-      const properScaleDegree = isScaleDegree.value 
-        ? getScaleDegreeInScale(note.interval, selectedScale.value)
-        : undefined;
-        
-      const tooltipContent = createNoteTooltipContent({
-        noteName: note.name,
-        scaleDegree: properScaleDegree,
-        fret: note.fret,
-        string: note.string,
-        instruction: "Click to change root note",
-      });
-      updateContent(tooltipContent);
-    } else {
-      // Note is not visible - show simple instruction with scale degree if enabled
-      const properScaleDegree = isScaleDegree.value 
-        ? getScaleDegreeInScale(note.interval, selectedScale.value)
-        : undefined;
-        
-      const tooltipContent = createNoteTooltipContent({
-        noteName: note.name,
-        scaleDegree: properScaleDegree,
-        fret: note.fret,
-        string: note.string,
-        instruction: "Click to change root note",
-      });
-      updateContent(tooltipContent);
-    }
+    // Create tooltip content with proper scale degree
+    const properScaleDegree = isScaleDegree.value
+      ? getScaleDegreeInScale(note.interval, selectedScale.value)
+      : undefined;
+
+    const tooltipContent = createNoteTooltipContent({
+      noteName: note.name,
+      scaleDegree: properScaleDegree,
+      fret: note.fret,
+      string: note.string,
+      instruction: "Click to change root note",
+    });
+
+    // Show note-anchored tooltip
+    showNoteTooltip(
+      note.id,
+      tooltipContent,
+      noteCenterX,
+      noteCenterY,
+      fretboardSvg.value
+    );
   } else {
     hoveredNoteId.value = null;
     // Hide tooltip after a short delay to allow moving to adjacent notes
@@ -634,7 +614,11 @@ function handleNoteHover(note: FretboardNote, isHovered: boolean) {
   font-size: 16px;
   font-weight: 600;
   text-anchor: middle;
-  fill: var(--shade-60);
+  fill: var(--shade-40); /* Default color for regular frets */
+}
+
+.fret-number-label--highlighted {
+  fill: var(--shade-60); /* Brighter color for marker frets (3, 5, 7, 9, 12, 15) */
 }
 
 .fret-marker {

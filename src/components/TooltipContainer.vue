@@ -63,6 +63,7 @@ const tooltipStyle = computed(() => {
     left: `${props.x + props.offset.x}px`,
     top: `${props.y + props.offset.y}px`,
     zIndex: "10000",
+    transform: "translateX(-50%)", // Center horizontally on anchor point
   };
 
   if (props.preventHover) {
@@ -125,6 +126,9 @@ watch([() => props.visible, () => props.x, () => props.y], async () => {
   word-wrap: break-word;
   background: #141414bd;
   backdrop-filter: blur(24px);
+  
+  // Smooth position transitions for note-anchored tooltips
+  transition: left 0.25s ease-out, top 0.25s ease-out;
 }
 
 .tooltip-text {

@@ -6,18 +6,8 @@
       <div class="root-and-scale-selector">
         <span class="scale-label">Scale</span>
         <div class="select-menus">
-          <div 
-            @mouseenter="showTooltip('Change root', $event)"
-            @mouseleave="hideTooltip"
-          >
-            <KeySelector class="root-selector" />
-          </div>
-          <div 
-            @mouseenter="showTooltip('Change scale', $event)"
-            @mouseleave="hideTooltip"
-          >
-            <ScaleSelector class="scale-selector" />
-          </div>
+          <KeySelector class="root-selector" />
+          <ScaleSelector class="scale-selector" />
         </div>
       </div>
 
@@ -40,10 +30,7 @@
 
     <!-- Right Column: Highlight Settings -->
     <div class="right-settings-container">
-      <HighlightSettings 
-        :show-tooltip="showTooltip"
-        :hide-tooltip="hideTooltip"
-      />
+      <HighlightSettings />
     </div>
 
     <!-- Simple Settings Tooltip -->
@@ -73,8 +60,8 @@ const isScaleDegree = computed({
   set: (value: boolean) => store.setIsScaleDegree(value),
 });
 
-// Initialize simple tooltip system
-const { state: tooltipState, showTooltip, hideTooltip } = useSimpleTooltip();
+// Initialize simple tooltip system (for any remaining simple tooltips)
+const { state: tooltipState } = useSimpleTooltip();
 </script>
 
 <style scoped lang="scss">

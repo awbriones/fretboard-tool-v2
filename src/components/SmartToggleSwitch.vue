@@ -76,9 +76,9 @@ const slider = ref<HTMLElement>();
 const leftWidth = ref(0);
 const rightWidth = ref(0);
 const containerWidth = ref(0);
-const containerPadding = 4; // Container left/right padding from CSS
-const borderOffset = 4; // Distance from container edge
-const textPadding = 8; // Extra padding around text
+const containerPadding = 8; // Container left/right padding from CSS
+const borderOffset = -4; // Distance from container edge
+const textPadding = 10; // Extra padding around text
 
 function measureOptions() {
   if (!leftOption.value || !rightOption.value || !toggleContainer.value) return;
@@ -187,7 +187,7 @@ watch([() => props.leftLabel, () => props.rightLabel], async () => {
   align-items: center;
   padding: 11px 8px;
 
-  height: 36px;
+  height: 40px;
   background: var(--shade-30);
   border-radius: 32px;
   transition: all 0.3s ease-out;
@@ -202,7 +202,7 @@ watch([() => props.leftLabel, () => props.rightLabel], async () => {
   align-items: center;
   white-space: nowrap;
 
-  height: 36px;
+  height: 40px;
   font-size: 14px;
   color: var(--shade-50);
   transition: color 0.3s ease-out;

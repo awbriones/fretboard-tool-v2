@@ -327,6 +327,7 @@ watch(rootNote, () => {
   background: #141414ad;
   border-radius: 28px;
   backdrop-filter: blur(12px);
+  width: 320px;
 
   &:focus-visible {
     outline: 2px solid var(--light-24);

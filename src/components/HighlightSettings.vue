@@ -15,10 +15,8 @@
           }"
           :style="setting.show ? { backgroundColor: getNoteColor(index) } : {}"
           @click="toggleShow(index)"
-          @mouseenter="
-            props.showTooltip(setting.show ? 'Hide note' : 'Show note', $event)
-          "
-          @mouseleave="props.hideTooltip"
+          @mouseenter="handleShowButtonHover($event, setting.show ? 'Hide note' : 'Show note')"
+          @mouseleave="handleMouseLeave"
         >
           <svg :viewBox="getButtonSvg(index)?.viewBox" width="40" height="40">
             <path
@@ -48,13 +46,8 @@
             fill: getColorButtonColor(index),
           }"
           @click="toggleColor(index)"
-          @mouseenter="
-            props.showTooltip(
-              setting.color ? 'Set color off' : 'Set color on',
-              $event
-            )
-          "
-          @mouseleave="props.hideTooltip"
+          @mouseenter="handleColorButtonHover($event, setting.color ? 'Set color off' : 'Set color on')"
+          @mouseleave="handleMouseLeave"
         >
           <svg :viewBox="getSvgPath('colors')?.viewBox">
             <path
@@ -80,13 +73,8 @@
           }"
           :style="{ fill: getDimColor(index) }"
           @click="toggleBright(index)"
-          @mouseenter="
-            props.showTooltip(
-              setting.bright ? 'Set bright off' : 'Set bright on',
-              $event
-            )
-          "
-          @mouseleave="props.hideTooltip"
+          @mouseenter="handleBrightButtonHover($event, setting.bright ? 'Set bright off' : 'Set bright on')"
+          @mouseleave="handleMouseLeave"
         >
           <svg :viewBox="getSvgPath('brightness')?.viewBox">
             <path
@@ -99,21 +87,28 @@
         </button>
       </div>
     </div>
+
+    <!-- Element Tooltip -->
+    <ElementTooltip
+      :visible="elementTooltip.state.value.visible"
+      :content="elementTooltip.state.value.content"
+      :target-element="elementTooltip.state.value.targetElement"
+      :position="elementTooltip.state.value.position"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, defineProps } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import { useFretboardStore } from "@/stores/fretboard";
 import { storeToRefs } from "pinia";
 import { getSvgPath } from "@/utils/svgPaths";
 import { noteNames } from "@/utils/noteUtils";
+import ElementTooltip from "./ElementTooltip.vue";
+import { useElementTooltip } from "@/composables/useElementTooltip";
 
-// Props for tooltip functions
-const props = defineProps<{
-  showTooltip: (content: string, event: MouseEvent) => void;
-  hideTooltip: () => void;
-}>();
+// Initialize element tooltip system
+const elementTooltip = useElementTooltip();
 
 const store = useFretboardStore();
 const { scaleDegreeSettings, rootNote, isScaleDegree } = storeToRefs(store);
@@ -202,6 +197,11 @@ function toggleShow(index: number) {
   store.setScaleDegreeSettings(currentSettings);
   store.switchToCustomMode(); // Auto-switch dropdown to Custom (label only)
   updateKey.value++; // Force immediate re-render
+  
+  // Update tooltip if currently visible
+  elementTooltip.updateTooltipContent(
+    currentSettings[index].show ? 'Hide note' : 'Show note'
+  );
 }
 
 function toggleColor(index: number) {
@@ -211,6 +211,11 @@ function toggleColor(index: number) {
     color: !currentSettings[index].color,
   };
   store.setScaleDegreeSettings(currentSettings);
+  
+  // Update tooltip if currently visible
+  elementTooltip.updateTooltipContent(
+    currentSettings[index].color ? 'Set color off' : 'Set color on'
+  );
 }
 
 function toggleBright(index: number) {
@@ -220,6 +225,11 @@ function toggleBright(index: number) {
     bright: !currentSettings[index].bright,
   };
   store.setScaleDegreeSettings(currentSettings);
+  
+  // Update tooltip if currently visible
+  elementTooltip.updateTooltipContent(
+    currentSettings[index].bright ? 'Set bright off' : 'Set bright on'
+  );
 }
 
 watch(
@@ -233,6 +243,26 @@ watch(
 watch(isScaleDegree, () => {
   updateKey.value++;
 });
+
+// Tooltip handlers that position above elements
+function handleShowButtonHover(event: MouseEvent, content: string) {
+  const target = event.currentTarget as HTMLElement;
+  elementTooltip.showAbove(content, target);
+}
+
+function handleColorButtonHover(event: MouseEvent, content: string) {
+  const target = event.currentTarget as HTMLElement;
+  elementTooltip.showAbove(content, target);
+}
+
+function handleBrightButtonHover(event: MouseEvent, content: string) {
+  const target = event.currentTarget as HTMLElement;
+  elementTooltip.showAbove(content, target);
+}
+
+function handleMouseLeave() {
+  elementTooltip.hideTooltip();
+}
 
 onMounted(() => {
   isScaleDegree.value = store.isScaleDegree;

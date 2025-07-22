@@ -6,28 +6,39 @@
       class="tuning-select"
       :value="string"
       @change="(event) => changeTuning(numStrings - 1 - index, (event.target as HTMLSelectElement).value)"
-      @mouseenter="props.showTooltip('Change string tuning', $event)"
-      @mouseleave="props.hideTooltip"
+      @mouseenter="handleTuningHover"
+      @mouseleave="handleMouseLeave"
     >
       <option v-for="note in noteNames" :key="note" :value="note">
         {{ note }}
       </option>
     </select>
+
+    <!-- Element Tooltip -->
+    <ElementTooltip
+      :visible="elementTooltip.state.value.visible"
+      :content="elementTooltip.state.value.content"
+      :target-element="elementTooltip.state.value.targetElement"
+      :position="elementTooltip.state.value.position"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { defineProps, defineEmits } from "vue";
+import ElementTooltip from "./ElementTooltip.vue";
+import { useElementTooltip } from "@/composables/useElementTooltip";
 
 const props = defineProps<{
   tuning: string[];
   numStrings: number;
   noteNames: string[];
   isGuitar: boolean;
-  showTooltip: (content: string, event: MouseEvent) => void;
-  hideTooltip: () => void;
 }>();
+
+// Initialize element tooltip system
+const elementTooltip = useElementTooltip();
 
 const emit = defineEmits<{
   (e: "tuning-changed", newTuning: string[]): void;
@@ -51,6 +62,16 @@ function changeTuning(index: number, newValue: string) {
   const newTuning = [...localTuning.value];
   newTuning[index] = newValue;
   emit("tuning-changed", newTuning);
+}
+
+// Tooltip handlers that position to the left
+function handleTuningHover(event: MouseEvent) {
+  const target = event.currentTarget as HTMLElement;
+  elementTooltip.showLeft("Change tuning", target);
+}
+
+function handleMouseLeave() {
+  elementTooltip.hideTooltip();
 }
 </script>
 
